@@ -1,36 +1,33 @@
 package screens
 
 import (
-	"github.com/charmbracelet/bubbles/key"
+	"github.com/altugbakan/card-logger/utils"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type ListModel struct{}
-
-func NewListModel() ListModel {
-	return ListModel{}
+type ListScreen struct {
+	keyMap utils.KeyMap
 }
 
-func (m ListModel) Init() tea.Cmd {
-	return nil
+func NewListScreen() ListScreen {
+	return ListScreen{}
 }
 
-func (m ListModel) Process(input string) (Screen, tea.Cmd) {
-
-	switch input {
+func (s ListScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
+	switch msg.String() {
 	case "ctrl+c", "q":
-		return m, tea.Quit
+		return s, tea.Quit
 	case "esc":
 		return NewTitleModel(), nil
 	}
 
-	return m, nil
+	return s, nil
 }
 
-func (m ListModel) View() string {
+func (h ListScreen) View() string {
 	return "Hello World from List"
 }
 
-func (m ListModel) KeyBindings() map[string]key.Binding {
-	return make(map[string]key.Binding)
+func (s ListScreen) Help() string {
+	return s.keyMap.Help()
 }
