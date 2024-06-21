@@ -22,9 +22,9 @@ func (m TitleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "a":
+		case "a", "A":
 			return NewAddModel(), nil
-		case "l":
+		case "l", "L":
 			return NewListModel(), nil
 		}
 	}
@@ -33,9 +33,10 @@ func (m TitleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m TitleModel) View() string {
-	header := HeaderStyle.Render("Card Logger")
-	options := lipgloss.JoinVertical(lipgloss.Top,
-		lipgloss.JoinHorizontal(lipgloss.Left, ActionStyle.Render("[A]"), "dd Cards"),
+	header := HeaderStyle.PaddingBottom(2).Render("Card Logger")
+	options := lipgloss.JoinHorizontal(lipgloss.Top,
+		lipgloss.JoinHorizontal(lipgloss.Left, ActionStyle.Render("[A]"),
+			TextStyle.PaddingRight(4).Render("dd Cards")),
 		lipgloss.JoinHorizontal(lipgloss.Left, ActionStyle.Render("[L]"), "ist Cards"),
 	)
 	return lipgloss.JoinVertical(lipgloss.Center, header, options)
