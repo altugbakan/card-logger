@@ -1,7 +1,7 @@
-// ui/title.go
-package ui
+package screens
 
 import (
+	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -12,21 +12,15 @@ func NewTitleModel() TitleModel {
 	return TitleModel{}
 }
 
-func (m TitleModel) Init() tea.Cmd {
-	return nil
-}
+func (m TitleModel) Process(input string) (Screen, tea.Cmd) {
 
-func (m TitleModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "a", "A":
-			return NewAddModel(), nil
-		case "l", "L":
-			return NewListModel(), nil
-		}
+	switch input {
+	case "q":
+		return m, tea.Quit
+	case "a", "A":
+		return NewAddModel(), nil
+	case "l", "L":
+		return NewListModel(), nil
 	}
 
 	return m, nil
@@ -40,4 +34,8 @@ func (m TitleModel) View() string {
 		lipgloss.JoinHorizontal(lipgloss.Left, ActionStyle.Render("[L]"), "ist Cards"),
 	)
 	return lipgloss.JoinVertical(lipgloss.Center, header, options)
+}
+
+func (m TitleModel) KeyBindings() map[string]key.Binding {
+	return make(map[string]key.Binding)
 }

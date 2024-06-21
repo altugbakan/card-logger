@@ -4,21 +4,21 @@ package main
 import (
 	"log"
 
-	ui "github.com/altugbakan/card-logger/ui"
+	"github.com/altugbakan/card-logger/screens"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 type model struct {
-	currentScreen tea.Model
+	currentScreen screens.Screen
 	width         int
 	height        int
 }
 
 func main() {
 	initialModel := model{
-		currentScreen: ui.NewTitleModel(),
+		currentScreen: screens.NewTitleModel(),
 		width:         60,
 		height:        80,
 	}
@@ -34,20 +34,20 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
+		input := msg.String()
+		switch input {
 		case "ctrl+c":
 			return m, tea.Quit
 		}
+		m.currentScreen, cmd = m.currentScreen.Process(input)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
-		return m, nil
 	}
 
-	var cmd tea.Cmd
-	m.currentScreen, cmd = m.currentScreen.Update(msg)
 	return m, cmd
 }
 
