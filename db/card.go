@@ -105,3 +105,25 @@ func RemoveUserCard(cardID int, pattern string) error {
 
 	return nil
 }
+
+func GetUserCardsForSet(set string) ([]Card, error) {
+	query := `SELECT id, name, set_abbr, number, rarity FROM Cards WHERE set_abbr = ?`
+	rows, err := db.Query(query, set)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	cards := []Card{}
+	for rows.Next() {
+		var card Card
+		err := rows.Scan(&card.ID, &card.Name, &card.Set, &card.Number, &card.Rarity)
+		if err != nil {
+			return nil, err
+		}
+
+		cards = append(cards, card)
+	}
+
+	return cards, nil
+}

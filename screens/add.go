@@ -52,15 +52,15 @@ func NewAddScreen() AddScreen {
 	keyBindings := utils.NewKeyMap(
 		key.NewBinding(
 			key.WithKeys("esc"),
-			key.WithHelp("esc", "Go back"),
+			key.WithHelp("esc", "go back"),
 		),
 		key.NewBinding(
 			key.WithKeys("enter"),
-			key.WithHelp("enter", "Add card"),
+			key.WithHelp("enter", "add card"),
 		),
 		key.NewBinding(
 			key.WithKeys("ctrl+z"),
-			key.WithHelp("ctrl+z", "Undo"),
+			key.WithHelp("ctrl+z", "undo"),
 		),
 	)
 

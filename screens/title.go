@@ -40,7 +40,11 @@ func (s TitleScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
 	case "a", "A":
 		return NewAddScreen(), textinput.Blink
 	case "l", "L":
-		return NewListScreen(), nil
+		listScreen, err := NewListScreen()
+		if err != nil {
+			return s, tea.Quit
+		}
+		return listScreen, nil
 	}
 
 	return s, nil
