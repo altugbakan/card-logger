@@ -65,7 +65,7 @@ func (s AddScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
 	case "enter":
 		return s.handleEnterKeyPress()
 	case "esc":
-		return NewTitleModel(), nil
+		return s.handleEscKeyPress()
 	}
 	s.input, cmd = s.input.Update(msg)
 
@@ -102,6 +102,16 @@ func (s *AddScreen) handleEnterKeyPress() (Screen, tea.Cmd) {
 		}
 	}
 	return s, nil
+}
+
+func (s *AddScreen) handleEscKeyPress() (Screen, tea.Cmd) {
+	if s.set != "" {
+		s.set = ""
+		s.msg = utils.DimTextStyle.Render("format: set number pattern")
+		s.input.Placeholder = "e.g. TEF 1 RH"
+		return s, nil
+	}
+	return NewTitleModel(), nil
 }
 
 func (s *AddScreen) submit(input string) (submitResult, error) {
@@ -144,7 +154,7 @@ func (s *AddScreen) handleTwoArguments(args []string) (submitResult, error) {
 		if err != nil {
 			return addCardResult{}, err
 		}
-		return addCard(args[0], cardNumber, "")
+		return addCardDefault(args[0], cardNumber)
 	} else {
 		cardNumber, err := strconv.Atoi(args[0])
 		if err != nil {
@@ -152,6 +162,10 @@ func (s *AddScreen) handleTwoArguments(args []string) (submitResult, error) {
 		}
 		return addCard(s.set, cardNumber, args[1])
 	}
+}
+
+func addCardDefault(set string, number int) (addCardResult, error) {
+	return addCard(set, number, "")
 }
 
 func addCard(set string, number int, pattern string) (addCardResult, error) {
@@ -168,14 +182,11 @@ func addCard(set string, number int, pattern string) (addCardResult, error) {
 		return addCardResult{}, err
 	}
 
-	// check if pattern is valid
-	possiblePatterns := utils.GetPatternsForRarity(card.Rarity)
-	if len(possiblePatterns) == 0 {
-		return addCardResult{}, errors.New("invalid card rarity")
-	} else if len(possiblePatterns) == 1 {
-		pattern = possiblePatterns[0]
+	// use first pattern if not provided
+	if pattern == "" {
+		pattern = utils.GetPatternsForRarity(card.Rarity)[0]
 	} else if !utils.IsPatternValidForRarity(pattern, card.Rarity) {
-		return addCardResult{}, errors.New("invalid pattern for card rarity")
+		return addCardResult{}, errors.New("pattern " + pattern + " is not valid for rarity " + card.Rarity)
 	}
 
 	// add card to user's collection
