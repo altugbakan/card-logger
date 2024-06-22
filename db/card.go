@@ -7,17 +7,18 @@ import (
 
 type Card struct {
 	ID     int
+	Name   string
 	Set    string
 	Number int
 	Rarity string
 }
 
 func GetCard(set string, number int) (Card, error) {
-	query := `SELECT id, set_abbr, number, rarity FROM Cards WHERE set_abbr = ? AND number = ?`
+	query := `SELECT id, name, set_abbr, number, rarity FROM Cards WHERE set_abbr = ? AND number = ?`
 	row := db.QueryRow(query, set, number)
 
 	var card Card
-	err := row.Scan(&card.ID, &card.Set, &card.Number, &card.Rarity)
+	err := row.Scan(&card.ID, &card.Name, &card.Set, &card.Number, &card.Rarity)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return Card{}, fmt.Errorf("no card found with set %s and card number %d", set, number)
@@ -28,9 +29,32 @@ func GetCard(set string, number int) (Card, error) {
 	return card, nil
 }
 
+func GetAllUserPatternAmounts(cardID int) (map[string]int, error) {
+	query := `SELECT card_id, pattern, quantity FROM UserCards WHERE card_id = ?`
+	rows, err := db.Query(query, cardID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	patterns := make(map[string]int)
+	for rows.Next() {
+		var pattern string
+		var quantity int
+		err := rows.Scan(&cardID, &pattern, &quantity)
+		if err != nil {
+			return nil, err
+		}
+
+		patterns[pattern] = quantity
+	}
+
+	return patterns, nil
+}
+
 func AddUserCard(cardID int, pattern string) error {
 	// if user already has the card id with the pattern, increase quantity
-	query := `SELECT id FROM UserCards WHERE card_id = ? AND pattern = ?`
+	query := `SELECT card_id FROM UserCards WHERE card_id = ? AND pattern = ?`
 	row := db.QueryRow(query, cardID, pattern)
 
 	var userCardID int
@@ -44,8 +68,8 @@ func AddUserCard(cardID int, pattern string) error {
 		}
 	} else {
 		// if user already has the card id with the pattern, increase quantity
-		query = `UPDATE UserCards SET quantity = quantity + 1 WHERE id = ?`
-		_, err = db.Exec(query, userCardID)
+		query = `UPDATE UserCards SET quantity = quantity + 1 WHERE card_id = ? AND pattern = ?`
+		_, err = db.Exec(query, userCardID, pattern)
 		if err != nil {
 			return err
 		}

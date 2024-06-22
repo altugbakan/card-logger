@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -17,6 +18,7 @@ var rarityToPatterns = map[string][]string{
 }
 
 func CorrectPattern(pattern string) string {
+	pattern = strings.ToUpper(pattern)
 	switch pattern {
 	case "HF":
 		return "H"
@@ -42,4 +44,26 @@ func IsPatternValidForRarity(pattern, rarity string) bool {
 	}
 
 	return false
+}
+
+func GetPatternsForRarity(rarity string) []string {
+	patterns, ok := rarityToPatterns[rarity]
+	if !ok {
+		return []string{}
+	}
+
+	return patterns
+}
+
+func GetPatternText(rarity string, patterns map[string]int) string {
+	possiblePatterns := GetPatternsForRarity(rarity)
+
+	patternsText := make([]string, 0, len(possiblePatterns))
+	for _, pattern := range possiblePatterns {
+		quantity := patterns[pattern]
+
+		patternsText = append(patternsText, pattern+": "+strconv.Itoa(quantity))
+	}
+
+	return strings.Join(patternsText, ", ")
 }
