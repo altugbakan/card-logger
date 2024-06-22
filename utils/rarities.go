@@ -15,6 +15,7 @@ var rarityToPatterns = map[string][]string{
 	"Ultra Rare":                {"H"},
 	"Special Illustration Rare": {"H"},
 	"Hyper Rare":                {"H"},
+	"Promo":                     {"H"},
 }
 
 func CorrectPattern(pattern string) string {
