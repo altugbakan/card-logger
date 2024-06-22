@@ -77,3 +77,31 @@ func AddUserCard(cardID int, pattern string) error {
 
 	return nil
 }
+
+func RemoveUserCard(cardID int, pattern string) error {
+	// if user already has the card id with the pattern, decrease quantity
+	query := `SELECT card_id FROM UserCards WHERE card_id = ? AND pattern = ?`
+	row := db.QueryRow(query, cardID, pattern)
+
+	var userCardID int
+	err := row.Scan(&userCardID)
+	if err != nil {
+		return fmt.Errorf("user does not have card id %d with pattern %s", cardID, pattern)
+	}
+
+	// if user already has the card id with the pattern, decrease quantity
+	query = `UPDATE UserCards SET quantity = quantity - 1 WHERE card_id = ? AND pattern = ?`
+	_, err = db.Exec(query, userCardID, pattern)
+	if err != nil {
+		return err
+	}
+
+	// if quantity is 0, remove the row
+	query = `DELETE FROM UserCards WHERE card_id = ? AND pattern = ? AND quantity = 0`
+	_, err = db.Exec(query, userCardID, pattern)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
