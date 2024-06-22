@@ -50,6 +50,7 @@ func NewAddScreen() AddScreen {
 	ti.CharLimit = 20
 	ti.Width = 20
 	ti.Placeholder = "e.g. TEF 1 RH"
+	ti.PromptStyle = utils.ActionStyle
 	msg := utils.DimTextStyle.Render("format: set number pattern")
 	return AddScreen{
 		keyMap: keyBindings,
@@ -74,7 +75,7 @@ func (s AddScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
 
 func (s AddScreen) View() string {
 	title := utils.HeaderStyle.Render("Add Card")
-	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.TextStyle.Render(s.set), s.input.View())
+	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.ActionStyle.Render(s.set), s.input.View())
 	input = lipgloss.JoinVertical(lipgloss.Left, input, s.msg)
 
 	return lipgloss.JoinVertical(lipgloss.Center, title, input)
@@ -126,12 +127,7 @@ func (s *AddScreen) submit(input string) (submitResult, error) {
 	}
 
 	if len(args) == 1 {
-		setName := strings.ToUpper(args[0])
-		if checkSetExists(setName) {
-			return changeSetResult{setName: setName}, nil
-		} else {
-			return changeSetResult{}, errors.New("set does not exist")
-		}
+		return s.handleOneArgument(args)
 	} else if len(args) == 2 {
 		return s.handleTwoArguments(args)
 	} else {
@@ -140,6 +136,20 @@ func (s *AddScreen) submit(input string) (submitResult, error) {
 			return addCardResult{}, err
 		}
 		return addCard(args[0], cardNumber, args[2])
+	}
+}
+
+func (s *AddScreen) handleOneArgument(args []string) (submitResult, error) {
+	num, err := strconv.Atoi(args[0])
+	if err == nil {
+		return addCardDefault(s.set, num)
+	}
+
+	setName := strings.ToUpper(args[0])
+	if checkSetExists(setName) {
+		return changeSetResult{setName: setName}, nil
+	} else {
+		return changeSetResult{}, errors.New("set does not exist")
 	}
 }
 
