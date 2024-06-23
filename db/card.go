@@ -86,7 +86,7 @@ func RemoveUserCard(cardID int, pattern string) error {
 	var userCardID int
 	err := row.Scan(&userCardID)
 	if err != nil {
-		return fmt.Errorf("user does not have card id %d with pattern %s", cardID, pattern)
+		return fmt.Errorf("no existing card found with card id %d with pattern %s", cardID, pattern)
 	}
 
 	// if user already has the card id with the pattern, decrease quantity

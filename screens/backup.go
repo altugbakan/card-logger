@@ -29,12 +29,12 @@ func NewBackupScreen() Backup {
 
 	latestBackup, err := utils.GetLatestBackup()
 	if err != nil {
-		utils.LogWarning("could not get latest backup: %v", err)
+		utils.LogError("could not get latest backup: %v", err)
 	}
 
 	allBackups, err := utils.ListBackups()
 	if err != nil {
-		utils.LogWarning("could not get all backups: %v", err)
+		utils.LogError("could not get all backups: %v", err)
 		allBackups = []string{}
 	}
 
@@ -92,7 +92,7 @@ func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			res, err := s.saveBackup()
 			s.msg = res.Render()
 			if err != nil {
-				utils.LogWarning("could not save backup: %v", err)
+				utils.LogError("could not save backup: %v", err)
 			} else {
 				utils.LogInfo("backup saved")
 			}
@@ -103,7 +103,7 @@ func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			res, err := s.restoreBackup()
 			s.msg = res.Render()
 			if err != nil {
-				utils.LogWarning("could not restore backup: %v", err)
+				utils.LogError("could not restore backup: %v", err)
 			} else {
 				utils.LogInfo("backup restored")
 			}

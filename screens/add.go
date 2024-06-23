@@ -2,6 +2,7 @@ package screens
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -112,7 +113,7 @@ func (s *Add) handleAddKeyPress() utils.Message {
 	s.input.SetValue("")
 	switch result := submitResult.(type) {
 	case addCardResult:
-		message := "added " + result.name + " - " + utils.GetPatternText(result.rarity, result.patternAmounts)
+		message := fmt.Sprintf("added %s - %s", result.name, utils.GetPatternText(result.rarity, result.patternAmounts))
 		utils.LogInfo(message)
 		return utils.NewInfoMessage(message)
 	case changeSetResult:
@@ -135,7 +136,7 @@ func (s *Add) handleUndoKeyPress() utils.Message {
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
 	} else {
-		message := "removed " + result.name + " - " + utils.GetPatternText(result.rarity, result.patternAmounts)
+		message := fmt.Sprintf("removed %s - %s", result.name, utils.GetPatternText(result.rarity, result.patternAmounts))
 		utils.LogInfo(message)
 		return utils.NewInfoMessage(message)
 	}
@@ -149,7 +150,7 @@ func (s *Add) undoLastAddition() (addCardResult, error) {
 	lastAddition := s.history[len(s.history)-1]
 	result, err := removeCard(lastAddition.set, lastAddition.number, lastAddition.pattern)
 	if err != nil {
-		utils.LogWarning("could not remove card: %v", err)
+		utils.LogError("could not remove card: %v", err)
 		return addCardResult{}, err
 	}
 
@@ -204,7 +205,8 @@ func (s *Add) handleOneArgument(args []string) (submitResult, error) {
 	if checkSetExists(setName) {
 		return changeSetResult{setName: setName}, nil
 	} else {
-		return changeSetResult{}, errors.New("set does not exist")
+		utils.LogWarning("non-existing set %s specified while adding card", setName)
+		return changeSetResult{}, fmt.Errorf("set %s does not exist", setName)
 	}
 }
 
@@ -217,13 +219,15 @@ func (s *Add) handleTwoArguments(args []string) (submitResult, error) {
 
 		cardNumber, err := strconv.Atoi(args[1])
 		if err != nil {
-			return addCardResult{}, err
+			utils.LogWarning("could not convert card number to integer while adding card: %v", err)
+			return addCardResult{}, fmt.Errorf("invalid card number %s", args[1])
 		}
 		return s.addCardDefault(args[0], cardNumber)
 	} else {
 		cardNumber, err := strconv.Atoi(args[0])
 		if err != nil {
-			return addCardResult{}, err
+			utils.LogWarning("could not convert card number to integer while adding card: %v", err)
+			return addCardResult{}, fmt.Errorf("invalid card number %s", args[0])
 		}
 		return s.addCard(s.set, cardNumber, args[1])
 	}
@@ -238,35 +242,36 @@ func (s *Add) addCard(set string, number int, pattern string) (addCardResult, er
 	pattern = utils.CorrectPattern(pattern)
 
 	if !checkSetExists(set) {
-		return addCardResult{}, errors.New("set does not exist")
+		utils.LogWarning("non-existing set %s specified while adding card", set)
+		return addCardResult{}, fmt.Errorf("set %s does not exist", set)
 	}
 
 	// check if card exists
 	card, err := db.GetCard(set, number)
 	if err != nil {
+		utils.LogError("could not get card from database: %v", err)
 		return addCardResult{}, err
 	}
 
-	// use first pattern if not provided
 	if pattern == "" {
 		pattern = utils.GetPatternsForRarity(card.Rarity)[0]
 	} else if !utils.IsPatternValidForRarity(pattern, card.Rarity) {
-		return addCardResult{}, errors.New("pattern " + pattern + " is not valid for rarity " + card.Rarity)
+		utils.LogWarning("invalid pattern %s specified for rarity %s while adding card", pattern, card.Rarity)
+		return addCardResult{}, fmt.Errorf("pattern %s is not valid for rarity %s", pattern, card.Rarity)
 	}
 
-	// add card to user's collection
 	err = db.AddUserCard(card.ID, pattern)
 	if err != nil {
-		return addCardResult{}, err
+		utils.LogError("could not add card to database: %v", err)
+		return addCardResult{}, fmt.Errorf("could not add card %s", card.Name)
 	}
 
-	// get all user's pattern amounts
 	patternAmounts, err := db.GetAllUserPatternAmounts(card.ID)
 	if err != nil {
-		return addCardResult{}, err
+		utils.LogError("could not get pattern amounts from database while adding card: %v", err)
+		return addCardResult{}, fmt.Errorf("could not get pattern amounts for card %s", card.Name)
 	}
 
-	// add to history
 	s.history = append(s.history, addCardArgs{set: set, number: number, pattern: pattern})
 
 	return addCardResult{
@@ -281,32 +286,33 @@ func removeCard(set string, number int, pattern string) (addCardResult, error) {
 	pattern = utils.CorrectPattern(pattern)
 
 	if !checkSetExists(set) {
-		return addCardResult{}, errors.New("set does not exist")
+		utils.LogWarning("non-existing set %s specified while removing card", set)
+		return addCardResult{}, fmt.Errorf("set %s does not exist", set)
 	}
 
-	// check if card exists
 	card, err := db.GetCard(set, number)
 	if err != nil {
+		utils.LogError("could not get card from database: %v", err)
 		return addCardResult{}, err
 	}
 
-	// use first pattern if not provided
 	if pattern == "" {
 		pattern = utils.GetPatternsForRarity(card.Rarity)[0]
 	} else if !utils.IsPatternValidForRarity(pattern, card.Rarity) {
-		return addCardResult{}, errors.New("pattern " + pattern + " is not valid for rarity " + card.Rarity)
+		utils.LogWarning("invalid pattern %s specified for rarity %s while removing card", pattern, card.Rarity)
+		return addCardResult{}, fmt.Errorf("pattern %s is not valid for rarity %s", pattern, card.Rarity)
 	}
 
-	// remove card from user's collection
 	err = db.RemoveUserCard(card.ID, pattern)
 	if err != nil {
+		utils.LogError("could not remove card from database: %v", err)
 		return addCardResult{}, err
 	}
 
-	// get all user's pattern amounts
 	patternAmounts, err := db.GetAllUserPatternAmounts(card.ID)
 	if err != nil {
-		return addCardResult{}, err
+		utils.LogError("could not get pattern amounts from database while removing card: %v", err)
+		return addCardResult{}, fmt.Errorf("could not get pattern amounts for card %s", card.Name)
 	}
 
 	return addCardResult{
