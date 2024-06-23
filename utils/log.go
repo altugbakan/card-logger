@@ -5,7 +5,7 @@ import (
 )
 
 func LogInfo(format string, v ...any) {
-	log.SetPrefix(TextStyle.Render("[INFO] "))
+	log.SetPrefix(ActionStyle.Render("[INFO] "))
 	log.Printf(format, v...)
 }
 
