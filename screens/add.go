@@ -13,6 +13,15 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	placeholder           = "e.g. TEF 1 RH"
+	placeholderWithoutSet = "e.g. 1 RH"
+	format                = "format: set number pattern"
+	formatWithoutSet      = "format: number pattern"
+	inputWidth            = 15
+	inputCharLimit        = 15
+)
+
 type submitResult interface{}
 
 type addCardResult struct {
@@ -41,13 +50,6 @@ type AddScreen struct {
 	history []addCardArgs
 }
 
-const (
-	placeholder           = "e.g. TEF 1 RH"
-	placeholderWithoutSet = "e.g. 1 RH"
-	format                = "format: set number pattern"
-	formatWithoutSet      = "format: number pattern"
-)
-
 func NewAddScreen() AddScreen {
 	keyBindings := utils.NewKeyMap(
 		key.NewBinding(
@@ -66,8 +68,8 @@ func NewAddScreen() AddScreen {
 
 	ti := textinput.New()
 	ti.Focus()
-	ti.CharLimit = 20
-	ti.Width = 20
+	ti.CharLimit = inputCharLimit
+	ti.Width = inputWidth
 	ti.Placeholder = placeholder
 	ti.PromptStyle = utils.ActionStyle
 
@@ -79,73 +81,74 @@ func NewAddScreen() AddScreen {
 	}
 }
 
-func (s AddScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg.String() {
-	case "enter":
-		return s.handleEnterKeyPress()
-	case "esc":
-		return s.handleEscKeyPress()
-	case "ctrl+z":
-		return s.handleUndoKeyPress()
+func (s AddScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			if s.input.Value() == "" {
+				return s, nil
+			}
+			s.msg = s.handleEnterKeyPress().Render()
+		case "esc":
+			return s.handleEscKeyPress()
+		case "ctrl+z":
+			s.msg = s.handleUndoKeyPress().Render()
+		}
 	}
+
+	var cmd tea.Cmd
 	s.input, cmd = s.input.Update(msg)
 
 	return s, cmd
 }
 
 func (s AddScreen) View() string {
-	title := utils.HeaderStyle.Render("Add Card")
-	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.ActionStyle.Render(s.set), s.input.View())
-	input = lipgloss.JoinVertical(lipgloss.Left, input, s.msg)
-
-	return lipgloss.JoinVertical(lipgloss.Center, title, input)
+	title := utils.HeaderStyle.MarginBottom(1).Render("Add Card")
+	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.ActionStyle.Width(3).Render(s.set), s.input.View())
+	titleAndInput := lipgloss.JoinVertical(lipgloss.Center, title, input)
+	msg := "\n" + s.msg
+	return lipgloss.JoinVertical(lipgloss.Center, titleAndInput, msg)
 }
 
 func (s AddScreen) Help() string {
 	return s.keyMap.Help()
 }
 
-func (s *AddScreen) handleEnterKeyPress() (Screen, tea.Cmd) {
+func (s *AddScreen) handleEnterKeyPress() utils.Message {
 	submitResult, err := s.submit(s.input.Value())
 	if err != nil {
-		s.msg = utils.ErrorStyle.Render(err.Error())
-	} else {
-		switch result := submitResult.(type) {
-		case addCardResult:
-			s.msg = utils.DimTextStyle.Render("added " + result.name + " - " +
-				utils.GetPatternText(result.rarity, result.patternAmounts))
-			s.input.SetValue("")
-		case changeSetResult:
-			s.set = result.setName
-			s.msg = utils.DimTextStyle.Render(formatWithoutSet)
-			s.input.Placeholder = placeholderWithoutSet
-			s.input.SetValue("")
-		}
+		return utils.NewErrorMessage(err.Error())
 	}
-	return s, nil
+
+	s.input.SetValue("")
+	switch result := submitResult.(type) {
+	case addCardResult:
+		return utils.NewInfoMessage("added " + result.name + " - " +
+			utils.GetPatternText(result.rarity, result.patternAmounts))
+	case changeSetResult:
+		return s.changeSet(result.setName)
+	}
+
+	return utils.NewErrorMessage("invalid input")
 }
 
 func (s *AddScreen) handleEscKeyPress() (Screen, tea.Cmd) {
 	if s.set != "" {
-		s.set = ""
-		s.msg = utils.DimTextStyle.Render(format)
-		s.input.Placeholder = placeholder
+		s.resetSet()
 		return s, nil
 	}
 	return NewTitleModel(), nil
 }
 
-func (s *AddScreen) handleUndoKeyPress() (Screen, tea.Cmd) {
+func (s *AddScreen) handleUndoKeyPress() utils.Message {
 	result, err := s.undoLastAddition()
 	if err != nil {
-		s.msg = utils.ErrorStyle.Render(err.Error())
+		return utils.NewErrorMessage(err.Error())
 	} else {
-		s.msg = utils.DimTextStyle.Render("removed " + result.name + " - " +
+		return utils.NewInfoMessage("removed " + result.name + " - " +
 			utils.GetPatternText(result.rarity, result.patternAmounts))
 	}
-	return s, nil
 }
 
 func (s *AddScreen) undoLastAddition() (addCardResult, error) {
@@ -187,6 +190,19 @@ func (s *AddScreen) submit(input string) (submitResult, error) {
 		}
 		return s.addCard(args[0], cardNumber, args[2])
 	}
+}
+
+func (s *AddScreen) changeSet(set string) utils.Message {
+	s.set = set
+	s.input.Placeholder = placeholderWithoutSet
+	s.input.SetValue("")
+	return utils.NewInfoMessage(formatWithoutSet)
+}
+
+func (s *AddScreen) resetSet() utils.Message {
+	s.set = ""
+	s.input.Placeholder = placeholder
+	return utils.NewInfoMessage(format)
 }
 
 func (s *AddScreen) handleOneArgument(args []string) (submitResult, error) {

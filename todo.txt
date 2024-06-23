@@ -1,5 +1,4 @@
 Bug
-- Search on list page doesn't work
 - Automate list page list sizing
 
 Feature
@@ -8,4 +7,3 @@ Feature
 
 Nice to Have
 - Remove ugly tea.Key for help generation
-- Fix add message and input placement

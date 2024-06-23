@@ -16,35 +16,37 @@ func NewTitleModel() TitleScreen {
 	keyMap := utils.NewKeyMap(
 		key.NewBinding(
 			key.WithKeys("a", "A"),
-			key.WithHelp("a/A", "Add cards"),
+			key.WithHelp("a", "add cards"),
 		),
 		key.NewBinding(
 			key.WithKeys("l", "L"),
-			key.WithHelp("l/L", "List cards"),
+			key.WithHelp("l", "list cards"),
 		),
 		key.NewBinding(
 			key.WithKeys("q"),
-			key.WithHelp("q", "Quit"),
+			key.WithHelp("q", "quit"),
 		),
 	)
 
 	return TitleScreen{keyMap: keyMap}
 }
 
-func (s TitleScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
-
-	input := msg.String()
-	switch input {
-	case "q":
-		return s, tea.Quit
-	case "a", "A":
-		return NewAddScreen(), textinput.Blink
-	case "l", "L":
-		listScreen, err := NewListScreen()
-		if err != nil {
+func (s TitleScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		input := msg.String()
+		switch input {
+		case "q":
 			return s, tea.Quit
+		case "a", "A":
+			return NewAddScreen(), textinput.Blink
+		case "l", "L":
+			listScreen, err := NewListScreen()
+			if err != nil {
+				return s, tea.Quit
+			}
+			return listScreen, nil
 		}
-		return listScreen, nil
 	}
 
 	return s, nil

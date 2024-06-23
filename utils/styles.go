@@ -6,6 +6,7 @@ const (
 	Normal         = "#dddddd"
 	Gray           = "#626262"
 	LightBlue      = "#add8e6"
+	DarkLightBlue  = "#87ceeb"
 	PastelRed      = "#ff6666"
 	normalColor    = lipgloss.Color(Normal)
 	grayColor      = lipgloss.Color(Gray)
@@ -20,4 +21,6 @@ var (
 	DimTextStyle = lipgloss.NewStyle().Foreground(grayColor)
 	TextStyle    = lipgloss.NewStyle().Foreground(normalColor)
 	ErrorStyle   = lipgloss.NewStyle().Foreground(pastelRedColor)
+	CursorStyle  = lipgloss.NewStyle().Background(lightBlueColor)
+	EmptyStyle   = lipgloss.NewStyle()
 )

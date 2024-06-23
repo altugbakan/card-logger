@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"strings"
 
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type SetItem struct {
@@ -26,29 +26,41 @@ type SetItemDelegate struct {
 	MaxNameLength int
 }
 
-func (d SetItemDelegate) Height() int                             { return 1 }
-func (d SetItemDelegate) Spacing() int                            { return 0 }
-func (d SetItemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+const (
+	minNamePadding         = 2
+	maxOwnedAndTotalLength = 7
+	progressBarWidth       = 20
+)
+
+func (d SetItemDelegate) Height() int                               { return 1 }
+func (d SetItemDelegate) Spacing() int                              { return 0 }
+func (d SetItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
 func (d SetItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
 	item, ok := listItem.(SetItem)
 	if !ok {
 		return
 	}
 
-	progressBar := progress.New(progress.WithScaledGradient(utils.Gray, utils.LightBlue))
-	progressBar.Width = 20
+	progressBar := progress.New(progress.WithScaledGradient(utils.DarkLightBlue, utils.LightBlue))
+	progressBar.Width = progressBarWidth
+
 	percent := float64(item.Owned) / float64(item.Total)
 	owned := strconv.Itoa(item.Owned)
 	total := strconv.Itoa(item.Total)
 
-	spaces := max(d.MaxNameLength-len(item.Name), 2)
-
-	display := item.Name + strings.Repeat(" ", spaces) + progressBar.ViewAs(percent) + "  " + owned + "/" + total
-
+	var display string
 	if index == m.Index() {
-		display = utils.ActionStyle.Render("> " + display)
+		itemName := utils.ActionStyle.Width(d.MaxNameLength).Render(item.Name)
+		ownedAndTotal := utils.ActionStyle.Width(maxOwnedAndTotalLength).
+			AlignHorizontal(lipgloss.Right).MarginLeft(1).Render(owned + "/" + total)
+		progressBar.PercentageStyle = utils.ActionStyle
+		display = utils.ActionStyle.Render("> " + itemName + progressBar.ViewAs(percent) + ownedAndTotal)
 	} else {
-		display = utils.TextStyle.Render("  " + display)
+		itemName := utils.TextStyle.Width(d.MaxNameLength).Render(item.Name)
+		ownedAndTotal := utils.TextStyle.Width(maxOwnedAndTotalLength).
+			AlignHorizontal(lipgloss.Right).MarginLeft(1).Render(owned + "/" + total)
+		progressBar.PercentageStyle = utils.TextStyle
+		display = utils.TextStyle.Render("  " + itemName + progressBar.ViewAs(percent) + ownedAndTotal)
 	}
 
 	fmt.Fprint(w, display)

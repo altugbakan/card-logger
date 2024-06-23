@@ -6,9 +6,14 @@ import (
 
 	"github.com/altugbakan/card-logger/db"
 	"github.com/altugbakan/card-logger/screens"
+	"github.com/altugbakan/card-logger/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+const (
+	helpMargin = 1
 )
 
 type model struct {
@@ -45,20 +50,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c":
 			return m, tea.Quit
 		}
-		m.currentScreen, cmd = m.currentScreen.Update(msg)
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
 		return m, nil
 	}
 
+	m.currentScreen, cmd = m.currentScreen.Update(msg)
 	return m, cmd
 }
 
 func (m model) View() string {
-	view := lipgloss.Place(m.width, m.height-1, lipgloss.Center, lipgloss.Center,
+	help := utils.EmptyStyle.Margin(helpMargin).Render(m.currentScreen.Help())
+	view := lipgloss.Place(m.width, m.height-lipgloss.Height(help), lipgloss.Center, lipgloss.Center,
 		m.currentScreen.View())
-	help := m.currentScreen.Help()
 
 	return lipgloss.JoinVertical(lipgloss.Left, view, help)
 }

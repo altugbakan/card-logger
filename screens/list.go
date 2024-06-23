@@ -68,6 +68,10 @@ func NewListScreen() (ListScreen, error) {
 	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength}, 20, 20)
 	list.SetShowHelp(false)
 	list.SetShowTitle(false)
+	list.FilterInput.Cursor.Style = utils.CursorStyle
+	list.FilterInput.PromptStyle = utils.ActionStyle
+	list.KeyMap.Quit.SetEnabled(false)
+	list.KeyMap.ForceQuit.SetEnabled(false)
 
 	return ListScreen{
 		keyMap: keyMap,
@@ -75,12 +79,19 @@ func NewListScreen() (ListScreen, error) {
 	}, nil
 }
 
-func (s ListScreen) Update(msg tea.KeyMsg) (Screen, tea.Cmd) {
-	switch msg.String() {
-	case "esc":
-		return NewTitleModel(), nil
-	case "enter":
-		// TODO: open set screen
+func (s ListScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "esc":
+			if s.list.SettingFilter() {
+				s.list.ResetFilter()
+				return s, nil
+			}
+			return NewTitleModel(), nil
+		case "enter":
+			// TODO: open set screen
+		}
 	}
 
 	var cmd tea.Cmd

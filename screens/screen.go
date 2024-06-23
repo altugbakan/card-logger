@@ -5,7 +5,7 @@ import (
 )
 
 type Screen interface {
-	Update(tea.KeyMsg) (Screen, tea.Cmd)
+	Update(tea.Msg) (Screen, tea.Cmd)
 	View() string
 	Help() string
 }
