@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/altugbakan/card-logger/db"
+	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -42,29 +43,16 @@ type changeSetResult struct {
 
 type emptySubmitResult struct{}
 
-type AddScreen struct {
-	keyMap  utils.KeyMap
+type Add struct {
+	keyMap  keymaps.Add
 	input   textinput.Model
 	set     string
 	msg     string
 	history []addCardArgs
 }
 
-func NewAddScreen() AddScreen {
-	keyBindings := utils.NewKeyMap(
-		key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "go back"),
-		),
-		key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "add card"),
-		),
-		key.NewBinding(
-			key.WithKeys("ctrl+z"),
-			key.WithHelp("ctrl+z", "undo"),
-		),
-	)
+func NewAddScreen() Add {
+	keyBindings := keymaps.NewAddKeyMap()
 
 	ti := textinput.New()
 	ti.Focus()
@@ -74,25 +62,25 @@ func NewAddScreen() AddScreen {
 	ti.PromptStyle = utils.ActionStyle
 
 	msg := utils.DimTextStyle.Render(format)
-	return AddScreen{
+	return Add{
 		keyMap: keyBindings,
 		input:  ti,
 		msg:    msg,
 	}
 }
 
-func (s AddScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Add) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "enter":
+		switch {
+		case key.Matches(msg, s.keyMap.Add):
 			if s.input.Value() == "" {
 				return s, nil
 			}
-			s.msg = s.handleEnterKeyPress().Render()
-		case "esc":
-			return s.handleEscKeyPress()
-		case "ctrl+z":
+			s.msg = s.handleAddKeyPress().Render()
+		case key.Matches(msg, s.keyMap.Back):
+			return s.handleBackKeyPress()
+		case key.Matches(msg, s.keyMap.Undo):
 			s.msg = s.handleUndoKeyPress().Render()
 		}
 	}
@@ -103,19 +91,19 @@ func (s AddScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	return s, cmd
 }
 
-func (s AddScreen) View() string {
-	title := utils.HeaderStyle.MarginBottom(1).Render("Add Card")
+func (s Add) View() string {
+	title := utils.TitleStyle.MarginBottom(1).Render("Add Card")
 	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.ActionStyle.Width(3).Render(s.set), s.input.View())
 	titleAndInput := lipgloss.JoinVertical(lipgloss.Center, title, input)
-	msg := "\n" + s.msg
+	msg := utils.EmptyStyle.MarginTop(1).Render(s.msg)
 	return lipgloss.JoinVertical(lipgloss.Center, titleAndInput, msg)
 }
 
-func (s AddScreen) Help() string {
+func (s Add) Help() string {
 	return s.keyMap.Help()
 }
 
-func (s *AddScreen) handleEnterKeyPress() utils.Message {
+func (s *Add) handleAddKeyPress() utils.Message {
 	submitResult, err := s.submit(s.input.Value())
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
@@ -134,15 +122,15 @@ func (s *AddScreen) handleEnterKeyPress() utils.Message {
 	return utils.NewErrorMessage("invalid input")
 }
 
-func (s *AddScreen) handleEscKeyPress() (Screen, tea.Cmd) {
+func (s *Add) handleBackKeyPress() (Screen, tea.Cmd) {
 	if s.set != "" {
 		s.resetSet()
 		return s, nil
 	}
-	return NewTitleModel(), nil
+	return NewTitleScreen(), nil
 }
 
-func (s *AddScreen) handleUndoKeyPress() utils.Message {
+func (s *Add) handleUndoKeyPress() utils.Message {
 	result, err := s.undoLastAddition()
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
@@ -153,7 +141,7 @@ func (s *AddScreen) handleUndoKeyPress() utils.Message {
 	}
 }
 
-func (s *AddScreen) undoLastAddition() (addCardResult, error) {
+func (s *Add) undoLastAddition() (addCardResult, error) {
 	if len(s.history) == 0 {
 		return addCardResult{}, errors.New("no cards to undo")
 	}
@@ -169,7 +157,7 @@ func (s *AddScreen) undoLastAddition() (addCardResult, error) {
 	return result, nil
 }
 
-func (s *AddScreen) submit(input string) (submitResult, error) {
+func (s *Add) submit(input string) (submitResult, error) {
 	args := strings.Fields(input)
 
 	if len(args) == 0 {
@@ -193,20 +181,20 @@ func (s *AddScreen) submit(input string) (submitResult, error) {
 	}
 }
 
-func (s *AddScreen) changeSet(set string) utils.Message {
+func (s *Add) changeSet(set string) utils.Message {
 	s.set = set
 	s.input.Placeholder = placeholderWithoutSet
 	s.input.SetValue("")
 	return utils.NewInfoMessage(formatWithoutSet)
 }
 
-func (s *AddScreen) resetSet() utils.Message {
+func (s *Add) resetSet() utils.Message {
 	s.set = ""
 	s.input.Placeholder = placeholder
 	return utils.NewInfoMessage(format)
 }
 
-func (s *AddScreen) handleOneArgument(args []string) (submitResult, error) {
+func (s *Add) handleOneArgument(args []string) (submitResult, error) {
 	num, err := strconv.Atoi(args[0])
 	if err == nil {
 		return s.addCardDefault(s.set, num)
@@ -220,7 +208,7 @@ func (s *AddScreen) handleOneArgument(args []string) (submitResult, error) {
 	}
 }
 
-func (s *AddScreen) handleTwoArguments(args []string) (submitResult, error) {
+func (s *Add) handleTwoArguments(args []string) (submitResult, error) {
 	if s.set == "" {
 		_, err := strconv.Atoi(args[0])
 		if err == nil {
@@ -241,11 +229,11 @@ func (s *AddScreen) handleTwoArguments(args []string) (submitResult, error) {
 	}
 }
 
-func (s *AddScreen) addCardDefault(set string, number int) (addCardResult, error) {
+func (s *Add) addCardDefault(set string, number int) (addCardResult, error) {
 	return s.addCard(set, number, "")
 }
 
-func (s *AddScreen) addCard(set string, number int, pattern string) (addCardResult, error) {
+func (s *Add) addCard(set string, number int, pattern string) (addCardResult, error) {
 	set = strings.ToUpper(set)
 	pattern = utils.CorrectPattern(pattern)
 

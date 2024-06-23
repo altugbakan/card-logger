@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -8,61 +9,51 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type TitleScreen struct {
-	keyMap utils.KeyMap
+type Title struct {
+	keyMap keymaps.Title
 }
 
-func NewTitleModel() TitleScreen {
-	keyMap := utils.NewKeyMap(
-		key.NewBinding(
-			key.WithKeys("a", "A"),
-			key.WithHelp("a", "add cards"),
-		),
-		key.NewBinding(
-			key.WithKeys("l", "L"),
-			key.WithHelp("l", "list cards"),
-		),
-		key.NewBinding(
-			key.WithKeys("q"),
-			key.WithHelp("q", "quit"),
-		),
-	)
+func NewTitleScreen() Title {
+	keyMap := keymaps.NewTitleKeyMap()
 
-	return TitleScreen{keyMap: keyMap}
+	return Title{keyMap: keyMap}
 }
 
-func (s TitleScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Title) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		input := msg.String()
-		switch input {
-		case "q":
-			utils.LogInfo("Quitting the program...")
+		switch {
+		case key.Matches(msg, s.keyMap.Quit):
+			utils.LogInfo("quitting the program...")
 			return s, tea.Quit
-		case "a", "A":
+		case key.Matches(msg, s.keyMap.Add):
 			return NewAddScreen(), textinput.Blink
-		case "l", "L":
+		case key.Matches(msg, s.keyMap.List):
 			listScreen, err := NewListScreen()
 			if err != nil {
 				return s, tea.Quit
 			}
 			return listScreen, nil
+		case key.Matches(msg, s.keyMap.Backup):
+			return NewBackupScreen(), nil
 		}
 	}
 
 	return s, nil
 }
 
-func (s TitleScreen) View() string {
-	header := utils.HeaderStyle.Render("Card Logger")
+func (s Title) View() string {
+	title := utils.TitleStyle.Render("Card Logger")
 	options := lipgloss.JoinHorizontal(lipgloss.Top,
-		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.Render("[A]"),
-			utils.TextStyle.PaddingRight(4).Render("dd Cards")),
-		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.Render("[L]"), "ist Cards"),
+		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.Render("[A]"), "dd Cards"),
+		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.MarginLeft(4).Render("[L]"), "ist Cards"),
 	)
-	return lipgloss.JoinVertical(lipgloss.Center, header, options)
+	backup := lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.Render("[B]"), "ackup")
+	backup = utils.EmptyStyle.MarginTop(1).Render(backup)
+	options = lipgloss.JoinVertical(lipgloss.Center, options, backup)
+	return lipgloss.JoinVertical(lipgloss.Center, title, options)
 }
 
-func (s TitleScreen) Help() string {
+func (s Title) Help() string {
 	return s.keyMap.Help()
 }

@@ -39,15 +39,15 @@ func main() {
 		width = utils.DefaultWidth
 		height = utils.DefaultHeight
 	}
-	utils.LogInfo("Initial terminal size: %d x %d", width, height)
+	utils.LogInfo("initial terminal size: %d x %d", width, height)
 
 	initialModel := model{
-		currentScreen: screens.NewTitleModel(),
+		currentScreen: screens.NewTitleScreen(),
 		width:         width,
 		height:        height,
 	}
 
-	utils.LogInfo("Starting the program...")
+	utils.LogInfo("starting the program...")
 	p := tea.NewProgram(initialModel, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		utils.LogError("could not run the program: %v", err)

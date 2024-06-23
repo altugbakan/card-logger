@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	HeaderStyle = lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).
+	TitleStyle = lipgloss.NewStyle().Bold(true).Align(lipgloss.Center).
 			Background(lightBlueColor).Foreground(grayColor).MarginBottom(2)
 	ActionStyle  = lipgloss.NewStyle().Foreground(lightBlueColor)
 	DimTextStyle = lipgloss.NewStyle().Foreground(grayColor)

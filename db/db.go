@@ -12,7 +12,7 @@ var db *sql.DB
 func InitDB() *sql.DB {
 	if db == nil {
 		var err error
-		db, err = sql.Open("sqlite3", "./cards.db")
+		db, err = sql.Open("sqlite3", utils.DatabaseFilePath)
 		if err != nil {
 			utils.LogError("could not open the database: %v", err)
 		}

@@ -2,7 +2,6 @@ Bug
 
 Feature
 - Set page with add/remove capability
-- Database backup & restore
+- Database restore
 
 Nice to Have
-- Remove ugly tea.Key for help generation

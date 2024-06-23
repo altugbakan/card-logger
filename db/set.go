@@ -50,38 +50,3 @@ func GetAllSets() ([]Set, error) {
 
 	return sets, nil
 }
-
-func GetUserCardCountsBySet() (map[string]int, error) {
-	query := `
-    SELECT c.set_abbr, COUNT(DISTINCT uc.card_id) 
-    FROM UserCards uc
-    JOIN Cards c ON uc.card_id = c.id
-    GROUP BY c.set_abbr
-    `
-
-	rows, err := db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	setCounts := make(map[string]int)
-
-	for rows.Next() {
-		var setAbbr string
-		var count int
-
-		err := rows.Scan(&setAbbr, &count)
-		if err != nil {
-			return nil, err
-		}
-
-		setCounts[setAbbr] = count
-	}
-
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return setCounts, nil
-}

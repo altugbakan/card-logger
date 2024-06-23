@@ -3,6 +3,7 @@ package screens
 import (
 	"github.com/altugbakan/card-logger/components"
 	"github.com/altugbakan/card-logger/db"
+	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
@@ -15,43 +16,22 @@ const (
 	widthMargin  = 2
 )
 
-type ListScreen struct {
-	keyMap utils.KeyMap
+type List struct {
+	keyMap keymaps.List
 	list   list.Model
 }
 
-func NewListScreen() (ListScreen, error) {
-	keyMap := utils.NewKeyMap(
-		key.NewBinding(
-			key.WithKeys("esc"),
-			key.WithHelp("esc", "go back"),
-		),
-		key.NewBinding(
-			key.WithKeys("up", "k"),
-			key.WithHelp("↑/k", "move up"),
-		),
-		key.NewBinding(
-			key.WithKeys("down", "j"),
-			key.WithHelp("↓/j", "move down"),
-		),
-		key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
-		key.NewBinding(
-			key.WithKeys("/"),
-			key.WithHelp("/", "search"),
-		),
-	)
+func NewListScreen() (List, error) {
+	keyMap := keymaps.NewListKeyMap()
 
 	sets, err := db.GetAllSets()
 	if err != nil {
-		return ListScreen{}, err
+		return List{}, err
 	}
 
 	userCardCounts, err := db.GetUserCardCountsBySet()
 	if err != nil {
-		return ListScreen{}, err
+		return List{}, err
 	}
 
 	items := []list.Item{}
@@ -78,7 +58,7 @@ func NewListScreen() (ListScreen, error) {
 
 	initialWidth -= widthMargin * 2
 	initialHeight -= heightMargin*2 - utils.HelpMargin*2 - 1
-	utils.LogInfo("Initializing list with size %d x %d", initialWidth, initialHeight)
+	utils.LogInfo("initializing list with size %d x %d", initialWidth, initialHeight)
 
 	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength},
 		initialWidth, initialHeight)
@@ -89,23 +69,23 @@ func NewListScreen() (ListScreen, error) {
 	list.KeyMap.Quit.SetEnabled(false)
 	list.KeyMap.ForceQuit.SetEnabled(false)
 
-	return ListScreen{
+	return List{
 		keyMap: keyMap,
 		list:   list,
 	}, nil
 }
 
-func (s ListScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "esc":
+		switch {
+		case key.Matches(msg, s.keyMap.Back):
 			if s.list.SettingFilter() {
 				s.list.ResetFilter()
 				return s, nil
 			}
-			return NewTitleModel(), nil
-		case "enter":
+			return NewTitleScreen(), nil
+		case key.Matches(msg, s.keyMap.Select):
 			// TODO: open set screen
 		}
 	case tea.WindowSizeMsg:
@@ -118,10 +98,10 @@ func (s ListScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	return s, cmd
 }
 
-func (s ListScreen) View() string {
+func (s List) View() string {
 	return s.list.View()
 }
 
-func (s ListScreen) Help() string {
+func (s List) Help() string {
 	return s.keyMap.Help()
 }
