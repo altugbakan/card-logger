@@ -124,8 +124,9 @@ func (s *AddScreen) handleEnterKeyPress() utils.Message {
 	s.input.SetValue("")
 	switch result := submitResult.(type) {
 	case addCardResult:
-		return utils.NewInfoMessage("added " + result.name + " - " +
-			utils.GetPatternText(result.rarity, result.patternAmounts))
+		message := "added " + result.name + " - " + utils.GetPatternText(result.rarity, result.patternAmounts)
+		utils.LogInfo(message)
+		return utils.NewInfoMessage(message)
 	case changeSetResult:
 		return s.changeSet(result.setName)
 	}
@@ -146,8 +147,9 @@ func (s *AddScreen) handleUndoKeyPress() utils.Message {
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
 	} else {
-		return utils.NewInfoMessage("removed " + result.name + " - " +
-			utils.GetPatternText(result.rarity, result.patternAmounts))
+		message := "removed " + result.name + " - " + utils.GetPatternText(result.rarity, result.patternAmounts)
+		utils.LogInfo(message)
+		return utils.NewInfoMessage(message)
 	}
 }
 
@@ -159,12 +161,11 @@ func (s *AddScreen) undoLastAddition() (addCardResult, error) {
 	lastAddition := s.history[len(s.history)-1]
 	result, err := removeCard(lastAddition.set, lastAddition.number, lastAddition.pattern)
 	if err != nil {
+		utils.LogWarning("could not remove card: %v", err)
 		return addCardResult{}, err
 	}
 
 	s.history = s.history[:len(s.history)-1]
-	s.msg = utils.DimTextStyle.Render("removed " + result.name + " - " +
-		utils.GetPatternText(result.rarity, result.patternAmounts))
 	return result, nil
 }
 

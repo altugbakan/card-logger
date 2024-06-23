@@ -7,6 +7,12 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/x/term"
+)
+
+const (
+	heightMargin = 5
+	widthMargin  = 2
 )
 
 type ListScreen struct {
@@ -65,7 +71,17 @@ func NewListScreen() (ListScreen, error) {
 		}
 	}
 
-	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength}, 20, 20)
+	initialWidth, initialHeight, err := term.GetSize(0)
+	if err != nil {
+		utils.LogError("failed to get terminal size: %v", err)
+	}
+
+	initialWidth -= widthMargin * 2
+	initialHeight -= heightMargin*2 - utils.HelpMargin*2 - 1
+	utils.LogInfo("Initializing list with size %d x %d", initialWidth, initialHeight)
+
+	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength},
+		initialWidth, initialHeight)
 	list.SetShowHelp(false)
 	list.SetShowTitle(false)
 	list.FilterInput.Cursor.Style = utils.CursorStyle
@@ -92,6 +108,9 @@ func (s ListScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
 		case "enter":
 			// TODO: open set screen
 		}
+	case tea.WindowSizeMsg:
+		s.list.SetSize(msg.Width-widthMargin*2, msg.Height-heightMargin*2)
+		return s, nil
 	}
 
 	var cmd tea.Cmd

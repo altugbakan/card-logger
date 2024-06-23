@@ -2,8 +2,8 @@ package db
 
 import (
 	"database/sql"
-	"log"
 
+	"github.com/altugbakan/card-logger/utils"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -14,7 +14,7 @@ func InitDB() *sql.DB {
 		var err error
 		db, err = sql.Open("sqlite3", "./cards.db")
 		if err != nil {
-			log.Fatal(err)
+			utils.LogError("could not open the database: %v", err)
 		}
 	}
 	return db

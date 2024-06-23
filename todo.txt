@@ -1,5 +1,4 @@
 Bug
-- Automate list page list sizing
 
 Feature
 - Set page with add/remove capability

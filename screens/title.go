@@ -37,6 +37,7 @@ func (s TitleScreen) Update(msg tea.Msg) (Screen, tea.Cmd) {
 		input := msg.String()
 		switch input {
 		case "q":
+			utils.LogInfo("Quitting the program...")
 			return s, tea.Quit
 		case "a", "A":
 			return NewAddScreen(), textinput.Blink
