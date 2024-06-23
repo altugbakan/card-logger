@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/x/term"
 )
 
 const (
@@ -51,10 +50,7 @@ func NewListScreen() (List, error) {
 		}
 	}
 
-	width, height, err := term.GetSize(0)
-	if err != nil {
-		utils.LogError("failed to get terminal size: %v", err)
-	}
+	width, height := utils.GetWindowSize()
 
 	width -= listWidthMargin * 2
 	height -= listHeightMargin*2 - utils.TotalHelpWidth

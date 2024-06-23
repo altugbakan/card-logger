@@ -8,7 +8,6 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/term"
 )
 
 const (
@@ -32,24 +31,12 @@ func NewBackupScreen() Backup {
 		utils.LogError("could not get latest backup: %v", err)
 	}
 
-	allBackups, err := utils.ListBackups()
+	backups, maxNameLength, err := getBackupItems()
 	if err != nil {
 		utils.LogError("could not get all backups: %v", err)
-		allBackups = []string{}
 	}
 
-	backups := []list.Item{}
-	maxNameLength := 0
-	for _, backup := range allBackups {
-		item := components.NewBackupItem(backup)
-		maxNameLength = max(maxNameLength, len(backup))
-		backups = append(backups, item)
-	}
-
-	width, height, err := term.GetSize(0)
-	if err != nil {
-		utils.LogError("failed to get terminal size: %v", err)
-	}
+	width, height := utils.GetWindowSize()
 
 	width -= listWidthMargin * 2
 	height = min(getListHeight(len(backups)), height-listHeightMargin*2-utils.TotalHelpWidth)
@@ -97,7 +84,7 @@ func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
 				utils.LogInfo("backup saved")
 			}
 		case key.Matches(msg, s.keyMap.Load):
-			s.setShowBackups(true)
+			s.msg = s.setShowBackups(true).Render()
 			return s, nil
 		case key.Matches(msg, s.keyMap.Select):
 			res, err := s.restoreBackup()
@@ -160,26 +147,51 @@ func (s *Backup) restoreBackup() (utils.Message, error) {
 	return utils.NewErrorMessage("could not restore backup"), nil
 }
 
-func (s *Backup) setShowBackups(show bool) {
+func (s *Backup) setShowBackups(show bool) utils.Message {
 	if show {
-		s.showBackups = true
+		items, _, err := getBackupItems()
+		if err != nil {
+			utils.LogError("could not load backups: %v", err)
+			return utils.NewErrorMessage("could not load backups")
+		}
+		s.list.SetItems(items)
 		s.keyMap.Load.SetEnabled(false)
 		s.keyMap.Save.SetEnabled(false)
 		s.keyMap.Up.SetEnabled(true)
 		s.keyMap.Down.SetEnabled(true)
 		s.keyMap.Select.SetEnabled(true)
 		s.keyMap.Search.SetEnabled(true)
+		s.showBackups = true
 	} else {
-		s.showBackups = false
 		s.keyMap.Load.SetEnabled(true)
 		s.keyMap.Save.SetEnabled(true)
 		s.keyMap.Up.SetEnabled(false)
 		s.keyMap.Down.SetEnabled(false)
 		s.keyMap.Select.SetEnabled(false)
 		s.keyMap.Search.SetEnabled(false)
+		s.showBackups = false
 	}
+
+	return utils.NewInfoMessage("")
 }
 
 func getListHeight(itemCount int) int {
 	return itemCount*components.BackupItemHeight + backupHeightMargin + 2
+}
+
+func getBackupItems() ([]list.Item, int, error) {
+	allBackups, err := utils.ListBackups()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	backups := []list.Item{}
+	maxNameLength := 0
+	for _, backup := range allBackups {
+		item := components.NewBackupItem(backup)
+		maxNameLength = max(maxNameLength, len(backup))
+		backups = append(backups, item)
+	}
+
+	return backups, maxNameLength, nil
 }

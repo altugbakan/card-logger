@@ -11,7 +11,6 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/x/term"
 )
 
 type model struct {
@@ -33,12 +32,7 @@ func main() {
 		defer f.Close()
 	}
 
-	width, height, err := term.GetSize(0)
-	if err != nil {
-		utils.LogWarning("could not get terminal size, using defaults: %v", err)
-		width = utils.DefaultWidth
-		height = utils.DefaultHeight
-	}
+	width, height := utils.GetWindowSize()
 	utils.LogInfo("initial terminal size: %d x %d", width, height)
 
 	initialModel := model{
