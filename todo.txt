@@ -2,6 +2,6 @@ Bug
 
 Feature
 - Set page with add/remove capability
-- Database restore
 
 Nice to Have
+- Automatic daily database backup

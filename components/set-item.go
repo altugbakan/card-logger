@@ -27,7 +27,6 @@ type SetItemDelegate struct {
 }
 
 const (
-	minNamePadding         = 2
 	maxOwnedAndTotalLength = 7
 	progressBarWidth       = 20
 )

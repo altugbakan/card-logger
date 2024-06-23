@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	heightMargin = 5
-	widthMargin  = 2
+	listHeightMargin = 5
+	listWidthMargin  = 2
 )
 
 type List struct {
@@ -51,17 +51,17 @@ func NewListScreen() (List, error) {
 		}
 	}
 
-	initialWidth, initialHeight, err := term.GetSize(0)
+	width, height, err := term.GetSize(0)
 	if err != nil {
 		utils.LogError("failed to get terminal size: %v", err)
 	}
 
-	initialWidth -= widthMargin * 2
-	initialHeight -= heightMargin*2 - utils.HelpMargin*2 - 1
-	utils.LogInfo("initializing list with size %d x %d", initialWidth, initialHeight)
+	width -= listWidthMargin * 2
+	height -= listHeightMargin*2 - utils.TotalHelpWidth
+	utils.LogInfo("initializing list with size %d x %d", width, height)
 
 	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength},
-		initialWidth, initialHeight)
+		width, height)
 	list.SetShowHelp(false)
 	list.SetShowTitle(false)
 	list.FilterInput.Cursor.Style = utils.CursorStyle
@@ -78,9 +78,12 @@ func NewListScreen() (List, error) {
 func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		if s.list.SettingFilter() {
+			break
+		}
 		switch {
 		case key.Matches(msg, s.keyMap.Back):
-			if s.list.SettingFilter() {
+			if s.list.IsFiltered() {
 				s.list.ResetFilter()
 				return s, nil
 			}
@@ -89,7 +92,7 @@ func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			// TODO: open set screen
 		}
 	case tea.WindowSizeMsg:
-		s.list.SetSize(msg.Width-widthMargin*2, msg.Height-heightMargin*2)
+		s.list.SetSize(msg.Width-listWidthMargin*2, msg.Height-listHeightMargin*2)
 		return s, nil
 	}
 
