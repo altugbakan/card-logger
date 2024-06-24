@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	"github.com/altugbakan/card-logger/db"
@@ -23,12 +25,14 @@ func main() {
 	defer db.CloseDB()
 
 	if os.Getenv("DEBUG") == "true" {
-		f, err := tea.LogToFile("debug.log", "[debug]")
+		f, err := tea.LogToFile("debug.log", "[info]")
 		if err != nil {
 			fmt.Printf("could not log to file: %v", err)
 			os.Exit(1)
 		}
 		defer f.Close()
+	} else {
+		log.SetOutput(io.Discard)
 	}
 
 	width, height := utils.GetWindowSize()

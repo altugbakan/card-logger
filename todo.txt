@@ -1,6 +1,7 @@
 Bug
 - Fix no items text on set
-= Fix inconsistent text length on set due to amounts
+- Fix inconsistent text length on set due to amounts
+- Fix centering list screen and add title
 
 Feature
 - Fetch DB from latest release
