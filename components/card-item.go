@@ -55,9 +55,10 @@ func (d CardItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 }
 
 func (d *CardItemDelegate) getSelectedPatternText(patterns []db.Pattern) string {
+	selectedIndex := min(d.SelectedIndex, len(patterns)-1)
 	text := ""
 	for i, pattern := range patterns {
-		if i == d.SelectedIndex {
+		if i == selectedIndex {
 			text += fmt.Sprintf(" > %s:%d", pattern.Name, pattern.Quantity)
 		} else {
 			text += fmt.Sprintf("   %s:%d", pattern.Name, pattern.Quantity)

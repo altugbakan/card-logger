@@ -14,6 +14,7 @@ type Set struct {
 	Right    key.Binding
 	Add      key.Binding
 	Remove   key.Binding
+	Search   key.Binding
 	help     help.Model
 }
 
@@ -35,12 +36,17 @@ func NewSetKeyMap(bindings ...key.Binding) Set {
 		),
 		Add: key.NewBinding(
 			key.WithKeys("a"),
-			key.WithHelp("a", "add card"),
+			key.WithHelp("a", "add"),
 		),
 		Remove: key.NewBinding(
 			key.WithKeys("d"),
-			key.WithHelp("d", "remove card"),
+			key.WithHelp("d", "remove"),
 		),
+		Search: key.NewBinding(
+			key.WithKeys("/"),
+			key.WithHelp("/", "search"),
+		),
+		help: help.New(),
 	}
 }
 
@@ -51,11 +57,15 @@ func (k Set) Help() string {
 func (k Set) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.Back,
+		k.Navigate,
+		k.Add,
+		k.Remove,
+		k.Search,
 	}
 }
 
 func (k Set) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Back, k.Add, k.Navigate, k.Remove},
+		{k.Back, k.Add, k.Navigate, k.Remove, k.Search},
 	}
 }

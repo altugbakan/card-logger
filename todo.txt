@@ -1,4 +1,6 @@
 Bug
+- Fix no items text on set
+= Fix inconsistent text length on set due to amounts
 
 Feature
 - Fetch DB from latest release
