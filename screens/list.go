@@ -62,8 +62,7 @@ func NewListScreen() (List, error) {
 	list.SetShowTitle(false)
 	list.FilterInput.Cursor.Style = utils.CursorStyle
 	list.FilterInput.PromptStyle = utils.ActionStyle
-	list.KeyMap.Quit.SetEnabled(false)
-	list.KeyMap.ForceQuit.SetEnabled(false)
+	list.DisableQuitKeybindings()
 
 	return List{
 		keyMap: keyMap,

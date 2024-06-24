@@ -47,8 +47,7 @@ func NewBackupScreen() Backup {
 	list.SetShowTitle(false)
 	list.FilterInput.Cursor.Style = utils.CursorStyle
 	list.FilterInput.PromptStyle = utils.ActionStyle
-	list.KeyMap.Quit.SetEnabled(false)
-	list.KeyMap.ForceQuit.SetEnabled(false)
+	list.DisableQuitKeybindings()
 
 	return Backup{
 		keyMap:       keyMap,
@@ -80,8 +79,6 @@ func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			s.msg = res.Render()
 			if err != nil {
 				utils.LogError("could not save backup: %v", err)
-			} else {
-				utils.LogInfo("backup saved")
 			}
 		case key.Matches(msg, s.keyMap.Load):
 			s.msg = s.setShowBackups(true).Render()
@@ -109,11 +106,12 @@ func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
 }
 
 func (s Backup) View() string {
-	title := utils.TitleStyle.Render("Backup")
-
 	if s.showBackups {
-		return s.list.View()
+		title := utils.TitleStyle.MarginBottom(1).Render("Load Backup")
+		list := s.list.View()
+		return lipgloss.JoinVertical(lipgloss.Center, title, list)
 	} else {
+		title := utils.TitleStyle.Render("Backup")
 		latestBackup := utils.TextStyle.Render("latest backup: " + s.latestBackup)
 		titleAndBackup := lipgloss.JoinVertical(lipgloss.Center, title, latestBackup)
 		msg := utils.DimTextStyle.MarginTop(1).Render(s.msg)
@@ -131,6 +129,7 @@ func (s *Backup) saveBackup() (utils.Message, error) {
 	if err != nil {
 		return utils.NewErrorMessage("could not save backup"), err
 	}
+	utils.LogInfo("saved backup %s", s.latestBackup)
 	return utils.NewInfoMessage("backup saved"), nil
 }
 
@@ -155,6 +154,9 @@ func (s *Backup) setShowBackups(show bool) utils.Message {
 			return utils.NewErrorMessage("could not load backups")
 		}
 		s.list.SetItems(items)
+		if len(items) == 0 {
+			s.list.SetShowStatusBar(false)
+		}
 		s.keyMap.Load.SetEnabled(false)
 		s.keyMap.Save.SetEnabled(false)
 		s.keyMap.Up.SetEnabled(true)
@@ -170,13 +172,17 @@ func (s *Backup) setShowBackups(show bool) utils.Message {
 		s.keyMap.Select.SetEnabled(false)
 		s.keyMap.Search.SetEnabled(false)
 		s.showBackups = false
+		s.list.SetShowStatusBar(true)
 	}
 
 	return utils.NewInfoMessage("")
 }
 
 func getListHeight(itemCount int) int {
-	return itemCount*components.BackupItemHeight + backupHeightMargin + 2
+	if itemCount == 0 {
+		return 1
+	}
+	return itemCount*components.BackupItemHeight + backupHeightMargin
 }
 
 func getBackupItems() ([]list.Item, int, error) {

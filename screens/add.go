@@ -53,7 +53,7 @@ type Add struct {
 }
 
 func NewAddScreen() Add {
-	keyBindings := keymaps.NewAddKeyMap()
+	keyMap := keymaps.NewAddKeyMap()
 
 	ti := textinput.New()
 	ti.Focus()
@@ -64,7 +64,7 @@ func NewAddScreen() Add {
 
 	msg := utils.DimTextStyle.Render(format)
 	return Add{
-		keyMap: keyBindings,
+		keyMap: keyMap,
 		input:  ti,
 		msg:    msg,
 	}
