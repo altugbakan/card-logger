@@ -13,6 +13,7 @@ import (
 )
 
 type SetItem struct {
+	Abbr  string
 	Name  string
 	Total int
 	Owned int

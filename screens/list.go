@@ -18,6 +18,7 @@ const (
 type List struct {
 	keyMap keymaps.List
 	list   list.Model
+	sets   []db.Set
 }
 
 func NewListScreen() (List, error) {
@@ -36,6 +37,7 @@ func NewListScreen() (List, error) {
 	items := []list.Item{}
 	for _, set := range sets {
 		item := components.SetItem{
+			Abbr:  set.Abbr,
 			Name:  set.Name,
 			Total: set.TotalCards,
 			Owned: userCardCounts[set.Abbr],
@@ -51,7 +53,6 @@ func NewListScreen() (List, error) {
 	}
 
 	width, height := utils.GetWindowSize()
-
 	width -= listWidthMargin * 2
 	height -= listHeightMargin*2 - utils.TotalHelpWidth
 	utils.LogInfo("initializing list with size %d x %d", width, height)
@@ -67,6 +68,7 @@ func NewListScreen() (List, error) {
 	return List{
 		keyMap: keyMap,
 		list:   list,
+		sets:   sets,
 	}, nil
 }
 
@@ -84,7 +86,18 @@ func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			return NewTitleScreen(), nil
 		case key.Matches(msg, s.keyMap.Select):
-			// TODO: open set screen
+			set, ok := s.list.SelectedItem().(components.SetItem)
+			if !ok {
+				utils.LogError("error casting selected item to SetItem")
+				return s, nil
+			}
+			setScreen, err := NewSetScreen(set.Abbr)
+			if err != nil {
+				utils.LogError("error creating set screen: %v", err)
+				return s, nil
+			}
+
+			return setScreen, nil
 		}
 	case tea.WindowSizeMsg:
 		s.list.SetSize(msg.Width-listWidthMargin*2, msg.Height-listHeightMargin*2)

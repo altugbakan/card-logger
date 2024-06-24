@@ -16,5 +16,5 @@ func LogWarning(format string, v ...any) {
 
 func LogError(format string, v ...any) {
 	log.SetPrefix(ErrorStyle.Render("[ERROR] "))
-	log.Fatal(v...)
+	log.Fatalf(format, v...)
 }

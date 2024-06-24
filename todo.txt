@@ -1,7 +1,9 @@
 Bug
+- Fix annoying cursor movement on add screen
 
 Feature
-- Set page with add/remove capability
+- Fetch DB from latest release
 
 Nice to Have
 - Automatic daily database backup
+- Add readme
