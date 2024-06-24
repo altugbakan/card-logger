@@ -1,5 +1,4 @@
 Bug
-- Fix annoying cursor movement on add screen
 
 Feature
 - Fetch DB from latest release

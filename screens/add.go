@@ -211,6 +211,10 @@ func (s *Add) resetSet() utils.Message {
 func (s *Add) handleOneArgument(args []string) (submitResult, error) {
 	num, err := strconv.Atoi(args[0])
 	if err == nil {
+		if s.set == "" {
+			utils.LogWarning("no set specified while adding card")
+			return addCardResult{}, errors.New("set not specified")
+		}
 		return s.addCardDefault(s.set, num)
 	}
 
