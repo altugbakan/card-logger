@@ -1,18 +1,27 @@
-name: Release
+name: Build and Release
 
 on:
   push:
     tags:
-      - "v*"
+      - "v0.1.0"
+
+permissions:
+  contents: write
 
 jobs:
   build:
-    name: Build and Release
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        goos: [linux, darwin, windows]
-        goarch: [amd64]
+        include:
+          - goos: linux
+            goarch: amd64
+          - goos: darwin
+            goarch: amd64
+          - goos: windows
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
     steps:
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -27,23 +36,52 @@ jobs:
           env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o card-logger-${{ matrix.goos }}-${{ matrix.goarch }}
           zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          path: card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+
+  create_release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
+
+  upload_assets:
+    needs: create_release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - asset_name: card-logger-linux-amd64.zip
+          - asset_name: card-logger-darwin-amd64.zip
+          - asset_name: card-logger-windows-amd64.zip
+          - asset_name: card-logger-darwin-arm64.zip
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ matrix.asset_name }}
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
-          asset_name: card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./${{ matrix.asset_name }}
+          asset_name: ${{ matrix.asset_name }}
           asset_content_type: application/zip
