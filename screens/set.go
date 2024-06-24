@@ -107,6 +107,9 @@ func (s Set) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			s.handleRemove()
 			return s, nil
 		}
+	case tea.WindowSizeMsg:
+		s.list.SetSize(msg.Width-setWidthMargin*2, msg.Height-setHeightMargin*2)
+		return s, nil
 	}
 
 	var cmd tea.Cmd
@@ -115,7 +118,7 @@ func (s Set) Update(msg tea.Msg) (Screen, tea.Cmd) {
 }
 
 func (s Set) View() string {
-	title := utils.TitleStyle.Render(s.name)
+	title := utils.TitleStyle.MarginBottom(1).Render(s.name)
 	return lipgloss.JoinVertical(lipgloss.Center, title, s.list.View())
 }
 
