@@ -122,14 +122,7 @@ func GetLatestBackup() (string, error) {
 		return "none", nil
 	}
 
-	pattern := regexp.MustCompile(`^cards_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.db$`)
-	for _, file := range files {
-		if pattern.MatchString(file) {
-			return file, nil
-		}
-	}
-
-	return "none", nil
+	return files[0], nil
 }
 
 func saveBackup(destinationFilePath string, fileName string) (string, error) {
