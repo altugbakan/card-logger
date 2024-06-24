@@ -2,6 +2,7 @@ package screens
 
 import (
 	"github.com/altugbakan/card-logger/components"
+	"github.com/altugbakan/card-logger/db"
 	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -26,7 +27,7 @@ type Backup struct {
 func NewBackupScreen() Backup {
 	keyMap := keymaps.NewBackupKeyMap()
 
-	latestBackup, err := utils.GetLatestBackup()
+	latestBackup, err := db.GetLatestBackup()
 	if err != nil {
 		utils.LogError("could not get latest backup: %v", err)
 	}
@@ -125,7 +126,7 @@ func (s Backup) Help() string {
 
 func (s *Backup) saveBackup() (utils.Message, error) {
 	var err error
-	s.latestBackup, err = utils.SaveBackup()
+	s.latestBackup, err = db.SaveBackup()
 	if err != nil {
 		return utils.NewErrorMessage("could not save backup"), err
 	}
@@ -136,7 +137,7 @@ func (s *Backup) saveBackup() (utils.Message, error) {
 func (s *Backup) restoreBackup() (utils.Message, error) {
 	i, ok := s.list.SelectedItem().(components.BackupItem)
 	if ok {
-		err := utils.RestoreBackup(i.Name)
+		err := db.RestoreBackup(i.Name)
 		if err != nil {
 			return utils.NewErrorMessage("could not restore backup"), err
 		} else {
@@ -186,7 +187,7 @@ func getListHeight(itemCount int) int {
 }
 
 func getBackupItems() ([]list.Item, int, error) {
-	allBackups, err := utils.ListBackups()
+	allBackups, err := db.ListBackups()
 	if err != nil {
 		return nil, 0, err
 	}

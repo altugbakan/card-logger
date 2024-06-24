@@ -53,21 +53,18 @@ func GetAllUserPatternAmounts(cardID int) (map[string]int, error) {
 }
 
 func AddUserCard(cardID int, pattern string) error {
-	// if user already has the card id with the pattern, increase quantity
 	query := `SELECT card_id FROM UserCards WHERE card_id = ? AND pattern = ?`
 	row := db.QueryRow(query, cardID, pattern)
 
 	var userCardID int
 	err := row.Scan(&userCardID)
 	if err != nil {
-		// if user doesn't have the card id with the pattern, insert a new row
 		query = `INSERT INTO UserCards (card_id, quantity, pattern) VALUES (?, 1, ?)`
 		_, err = db.Exec(query, cardID, pattern)
 		if err != nil {
 			return err
 		}
 	} else {
-		// if user already has the card id with the pattern, increase quantity
 		query = `UPDATE UserCards SET quantity = quantity + 1 WHERE card_id = ? AND pattern = ?`
 		_, err = db.Exec(query, userCardID, pattern)
 		if err != nil {
@@ -75,11 +72,11 @@ func AddUserCard(cardID int, pattern string) error {
 		}
 	}
 
+	hasChanges = true
 	return nil
 }
 
 func RemoveUserCard(cardID int, pattern string) error {
-	// if user already has the card id with the pattern, decrease quantity
 	query := `SELECT card_id FROM UserCards WHERE card_id = ? AND pattern = ?`
 	row := db.QueryRow(query, cardID, pattern)
 
@@ -89,20 +86,19 @@ func RemoveUserCard(cardID int, pattern string) error {
 		return fmt.Errorf("no existing card found with card id %d with pattern %s", cardID, pattern)
 	}
 
-	// if user already has the card id with the pattern, decrease quantity
 	query = `UPDATE UserCards SET quantity = quantity - 1 WHERE card_id = ? AND pattern = ?`
 	_, err = db.Exec(query, userCardID, pattern)
 	if err != nil {
 		return err
 	}
 
-	// if quantity is 0, remove the row
 	query = `DELETE FROM UserCards WHERE card_id = ? AND pattern = ? AND quantity = 0`
 	_, err = db.Exec(query, userCardID, pattern)
 	if err != nil {
 		return err
 	}
 
+	hasChanges = true
 	return nil
 }
 

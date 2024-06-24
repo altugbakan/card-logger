@@ -9,10 +9,15 @@ import (
 
 var db *sql.DB
 
+const (
+	databaseFilePath = "cards.db"
+	backupDirectory  = "backups"
+)
+
 func InitDB() *sql.DB {
 	if db == nil {
 		var err error
-		db, err = sql.Open("sqlite3", utils.DatabaseFilePath)
+		db, err = sql.Open("sqlite3", databaseFilePath)
 		if err != nil {
 			utils.LogError("could not open the database: %v", err)
 		}

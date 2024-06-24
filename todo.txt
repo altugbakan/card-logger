@@ -4,5 +4,4 @@ Feature
 - Fetch DB from latest release
 
 Nice to Have
-- Automatic daily database backup
 - Add readme

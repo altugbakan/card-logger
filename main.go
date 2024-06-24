@@ -46,6 +46,8 @@ func main() {
 	if _, err := p.Run(); err != nil {
 		utils.LogError("could not run the program: %v", err)
 	}
+
+	db.SaveAutoBackup()
 }
 
 func (m model) Init() tea.Cmd {
@@ -66,7 +68,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width = msg.Width
 		m.height = msg.Height
 
-		// Remove help width from height
 		msg.Height -= utils.TotalHelpWidth
 	}
 
