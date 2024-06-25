@@ -1,6 +1,0 @@
-Bug
-
-Feature
-
-Nice to Have
-- Add readme
