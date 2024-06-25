@@ -143,6 +143,7 @@ func saveBackup(destinationFilePath string, fileName string) (string, error) {
 		return "", err
 	}
 
+	hasChanges = false
 	return fileName, nil
 }
 
