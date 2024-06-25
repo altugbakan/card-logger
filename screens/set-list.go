@@ -11,27 +11,27 @@ import (
 )
 
 const (
-	listHeightMargin = 5
-	listWidthMargin  = 2
+	setListHeightMargin = 5
+	setListWidthMargin  = 2
 )
 
-type List struct {
-	keyMap keymaps.List
+type SetList struct {
+	keyMap keymaps.SetList
 	list   list.Model
 	sets   []db.Set
 }
 
-func NewListScreen() (List, error) {
+func NewListScreen() (SetList, error) {
 	keyMap := keymaps.NewListKeyMap()
 
 	sets, err := db.GetAllSets()
 	if err != nil {
-		return List{}, err
+		return SetList{}, err
 	}
 
 	userCardCounts, err := db.GetUserCardCountsBySet()
 	if err != nil {
-		return List{}, err
+		return SetList{}, err
 	}
 
 	items := []list.Item{}
@@ -53,9 +53,9 @@ func NewListScreen() (List, error) {
 	}
 
 	width, height := utils.GetWindowSize()
-	width -= listWidthMargin * 2
-	height -= listHeightMargin*2 - utils.TotalHelpWidth
-	utils.LogInfo("initializing list with size %d x %d", width, height)
+	width -= setListWidthMargin * 2
+	height -= setListHeightMargin*2 - utils.TotalHelpWidth
+	utils.LogInfo("initializing set list with size %d x %d", width, height)
 
 	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength},
 		width, height)
@@ -65,14 +65,14 @@ func NewListScreen() (List, error) {
 	list.FilterInput.PromptStyle = utils.ActionStyle
 	list.DisableQuitKeybindings()
 
-	return List{
+	return SetList{
 		keyMap: keyMap,
 		list:   list,
 		sets:   sets,
 	}, nil
 }
 
-func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if s.list.SettingFilter() {
@@ -100,7 +100,7 @@ func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			return setScreen, nil
 		}
 	case tea.WindowSizeMsg:
-		s.list.SetSize(msg.Width-listWidthMargin*2, msg.Height-listHeightMargin*2)
+		s.list.SetSize(msg.Width-setListWidthMargin*2, msg.Height-setListHeightMargin*2)
 		return s, nil
 	}
 
@@ -109,10 +109,10 @@ func (s List) Update(msg tea.Msg) (Screen, tea.Cmd) {
 	return s, cmd
 }
 
-func (s List) View() string {
+func (s SetList) View() string {
 	return s.list.View()
 }
 
-func (s List) Help() string {
+func (s SetList) Help() string {
 	return s.keyMap.Help()
 }

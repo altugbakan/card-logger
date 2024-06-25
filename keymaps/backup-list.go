@@ -5,7 +5,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
-type List struct {
+type BackupList struct {
 	Back   key.Binding
 	Up     key.Binding
 	Down   key.Binding
@@ -14,8 +14,8 @@ type List struct {
 	help   help.Model
 }
 
-func NewListKeyMap() List {
-	return List{
+func NewBackupListKeyMap() BackupList {
+	return BackupList{
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "go back"),
@@ -30,7 +30,7 @@ func NewListKeyMap() List {
 		),
 		Select: key.NewBinding(
 			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
+			key.WithHelp("enter", "load backup"),
 		),
 		Search: key.NewBinding(
 			key.WithKeys("/"),
@@ -40,11 +40,11 @@ func NewListKeyMap() List {
 	}
 }
 
-func (k List) Help() string {
+func (k BackupList) Help() string {
 	return k.help.View(k)
 }
 
-func (k List) ShortHelp() []key.Binding {
+func (k BackupList) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.Back,
 		k.Up,
@@ -54,7 +54,7 @@ func (k List) ShortHelp() []key.Binding {
 	}
 }
 
-func (k List) FullHelp() [][]key.Binding {
+func (k BackupList) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Back, k.Up, k.Down, k.Select, k.Search},
 	}
