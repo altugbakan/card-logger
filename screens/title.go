@@ -29,7 +29,7 @@ func (s Title) Update(msg tea.Msg) (Screen, tea.Cmd) {
 		case key.Matches(msg, s.keyMap.Add):
 			return NewAddScreen(), textinput.Blink
 		case key.Matches(msg, s.keyMap.List):
-			listScreen, err := NewListScreen()
+			listScreen, err := NewSetListScreen()
 			if err != nil {
 				utils.LogError("could not initialize list screen: %v", err)
 				return s, tea.Quit

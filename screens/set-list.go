@@ -8,11 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-)
-
-const (
-	setListHeightMargin = 5
-	setListWidthMargin  = 2
+	"github.com/charmbracelet/lipgloss"
 )
 
 type SetList struct {
@@ -21,7 +17,7 @@ type SetList struct {
 	sets   []db.Set
 }
 
-func NewListScreen() (SetList, error) {
+func NewSetListScreen() (SetList, error) {
 	keyMap := keymaps.NewListKeyMap()
 
 	sets, err := db.GetAllSets()
@@ -36,7 +32,7 @@ func NewListScreen() (SetList, error) {
 
 	items := []list.Item{}
 	for _, set := range sets {
-		item := components.SetItem{
+		item := components.SetListItem{
 			Abbr:  set.Abbr,
 			Name:  set.Name,
 			Total: set.TotalCards,
@@ -52,18 +48,7 @@ func NewListScreen() (SetList, error) {
 		}
 	}
 
-	width, height := utils.GetWindowSize()
-	width -= setListWidthMargin * 2
-	height -= setListHeightMargin*2 - utils.TotalHelpWidth
-	utils.LogInfo("initializing set list with size %d x %d", width, height)
-
-	list := list.New(items, components.SetItemDelegate{MaxNameLength: maxNameLength},
-		width, height)
-	list.SetShowHelp(false)
-	list.SetShowTitle(false)
-	list.FilterInput.Cursor.Style = utils.CursorStyle
-	list.FilterInput.PromptStyle = utils.ActionStyle
-	list.DisableQuitKeybindings()
+	list := utils.NewList(items, components.SetListItemDelegate{MaxNameLength: maxNameLength}, "set")
 
 	return SetList{
 		keyMap: keyMap,
@@ -86,12 +71,12 @@ func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			return NewTitleScreen(), nil
 		case key.Matches(msg, s.keyMap.Select):
-			set, ok := s.list.SelectedItem().(components.SetItem)
+			set, ok := s.list.SelectedItem().(components.SetListItem)
 			if !ok {
 				utils.LogError("error casting selected item to SetItem")
 				return s, nil
 			}
-			setScreen, err := NewSetScreen(set.Abbr)
+			setScreen, err := NewCardListScreen(set.Abbr)
 			if err != nil {
 				utils.LogError("error creating set screen: %v", err)
 				return s, nil
@@ -100,7 +85,9 @@ func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			return setScreen, nil
 		}
 	case tea.WindowSizeMsg:
-		s.list.SetSize(msg.Width-setListWidthMargin*2, msg.Height-setListHeightMargin*2)
+		width, height := utils.GetListSize(len(s.list.Items()), msg.Width, msg.Height)
+		utils.LogInfo("resizing set list to %d x %d", width, height)
+		s.list.SetSize(width, height)
 		return s, nil
 	}
 
@@ -110,7 +97,9 @@ func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 }
 
 func (s SetList) View() string {
-	return s.list.View()
+	title := utils.TitleStyle.MarginBottom(1).Render("Expansion Sets")
+	list := s.list.View()
+	return lipgloss.JoinVertical(lipgloss.Center, title, list)
 }
 
 func (s SetList) Help() string {

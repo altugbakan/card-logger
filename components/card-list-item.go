@@ -11,27 +11,27 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type CardItem struct {
+type CardListItem struct {
 	CardID   int
 	Number   int
 	Name     string
 	Patterns []db.Pattern
 }
 
-func (c CardItem) FilterValue() string {
+func (c CardListItem) FilterValue() string {
 	return c.Name
 }
 
-type CardItemDelegate struct {
+type CardListItemDelegate struct {
 	MaxNameLength int
 	SelectedIndex int
 }
 
-func (d CardItemDelegate) Height() int                               { return 1 }
-func (d CardItemDelegate) Spacing() int                              { return 0 }
-func (d CardItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d CardItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	item, ok := listItem.(CardItem)
+func (d CardListItemDelegate) Height() int                               { return 1 }
+func (d CardListItemDelegate) Spacing() int                              { return 0 }
+func (d CardListItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d CardListItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	item, ok := listItem.(CardListItem)
 	if !ok {
 		return
 	}
@@ -54,7 +54,7 @@ func (d CardItemDelegate) Render(w io.Writer, m list.Model, index int, listItem 
 	fmt.Fprint(w, display)
 }
 
-func (d *CardItemDelegate) getSelectedPatternText(patterns []db.Pattern) string {
+func (d *CardListItemDelegate) getSelectedPatternText(patterns []db.Pattern) string {
 	selectedIndex := min(d.SelectedIndex, len(patterns)-1)
 	text := ""
 	for i, pattern := range patterns {
@@ -68,7 +68,7 @@ func (d *CardItemDelegate) getSelectedPatternText(patterns []db.Pattern) string 
 	return text
 }
 
-func (d *CardItemDelegate) getPatternText(patterns []db.Pattern) string {
+func (d *CardListItemDelegate) getPatternText(patterns []db.Pattern) string {
 	text := ""
 	for _, pattern := range patterns {
 		text += fmt.Sprintf("   %s:%d", pattern.Name, pattern.Quantity)

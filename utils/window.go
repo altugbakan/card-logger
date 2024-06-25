@@ -1,6 +1,8 @@
 package utils
 
-import "github.com/charmbracelet/x/term"
+import (
+	"github.com/charmbracelet/x/term"
+)
 
 func GetWindowSize() (int, int) {
 	width, height, err := term.GetSize(0)

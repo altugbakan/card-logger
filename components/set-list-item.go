@@ -12,18 +12,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type SetItem struct {
+type SetListItem struct {
 	Abbr  string
 	Name  string
 	Total int
 	Owned int
 }
 
-func (i SetItem) FilterValue() string {
+func (i SetListItem) FilterValue() string {
 	return i.Name
 }
 
-type SetItemDelegate struct {
+type SetListItemDelegate struct {
 	MaxNameLength int
 }
 
@@ -32,11 +32,11 @@ const (
 	progressBarWidth       = 20
 )
 
-func (d SetItemDelegate) Height() int                               { return 1 }
-func (d SetItemDelegate) Spacing() int                              { return 0 }
-func (d SetItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d SetItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	item, ok := listItem.(SetItem)
+func (d SetListItemDelegate) Height() int                               { return utils.ListItemHeight }
+func (d SetListItemDelegate) Spacing() int                              { return utils.ListItemSpacing }
+func (d SetListItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d SetListItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	item, ok := listItem.(SetListItem)
 	if !ok {
 		return
 	}

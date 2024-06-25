@@ -11,11 +11,6 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const (
-	backupListHeightMargin = 5
-	backupListWidthMargin  = 2
-)
-
 type BackupList struct {
 	keyMap         keymaps.SetList
 	list           list.Model
@@ -30,21 +25,7 @@ func NewBackupListScreen(previousScreen Screen) BackupList {
 		utils.LogError("could not get all backups: %v", err)
 	}
 
-	width, height := utils.GetWindowSize()
-
-	width -= setListWidthMargin * 2
-	height = min(getListHeight(len(backups)), height-setListHeightMargin*2-utils.TotalHelpWidth)
-	utils.LogInfo("initializing backup list with size %d x %d", width, height)
-
-	list := list.New(backups, components.BackupItemDelegate{MaxNameLength: maxNameLength}, width, height)
-	list.SetShowHelp(false)
-	list.SetShowTitle(false)
-	list.FilterInput.Cursor.Style = utils.CursorStyle
-	list.FilterInput.PromptStyle = utils.ActionStyle
-	list.DisableQuitKeybindings()
-	if len(backups) == 0 {
-		list.SetShowStatusBar(false)
-	}
+	list := utils.NewList(backups, components.BackupListItemDelegate{MaxNameLength: maxNameLength}, "backup")
 
 	return BackupList{
 		keyMap:         keyMap,
@@ -77,8 +58,9 @@ func (s BackupList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			return NewBackupScreen(WithMessage(res.Render())), nil
 		}
 	case tea.WindowSizeMsg:
-		s.list.SetSize(msg.Width-backupListWidthMargin*2,
-			min(getListHeight(len(s.list.Items())), msg.Height-backupListHeightMargin*2))
+		width, height := utils.GetListSize(len(s.list.Items()), msg.Width, msg.Height)
+		utils.LogInfo("resizing backup list to %d x %d", width, height)
+		s.list.SetSize(width, height)
 		return s, nil
 	}
 	var cmd tea.Cmd
@@ -94,13 +76,6 @@ func (s BackupList) View() string {
 
 func (s BackupList) Help() string {
 	return s.keyMap.Help()
-}
-
-func getListHeight(itemCount int) int {
-	if itemCount == 0 {
-		return 1
-	}
-	return itemCount*components.BackupItemHeight + backupListHeightMargin
 }
 
 func getBackupItems() ([]list.Item, int, error) {
@@ -121,7 +96,7 @@ func getBackupItems() ([]list.Item, int, error) {
 }
 
 func (s *BackupList) restoreBackup() (utils.Message, error) {
-	i, ok := s.list.SelectedItem().(components.BackupItem)
+	i, ok := s.list.SelectedItem().(components.BackupListItem)
 	if ok {
 		err := db.RestoreBackup(i.Name)
 		if err != nil {
