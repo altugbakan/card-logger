@@ -11,7 +11,7 @@ const (
 
 func NewList(items []list.Item, delegate list.ItemDelegate, name string) list.Model {
 	width, height := GetWindowSize()
-	width, height = GetListSize(len(items), width, height)
+	width, height = getListSize(len(items), width, height)
 
 	LogInfo("initializing %s list with size %d x %d", name, width, height)
 	list := list.New(items, delegate, width, height)
@@ -28,7 +28,13 @@ func NewList(items []list.Item, delegate list.ItemDelegate, name string) list.Mo
 	return list
 }
 
-func GetListSize(itemCount, windowWidth, windowHeight int) (int, int) {
+func SetListSize(list *list.Model, windowWidth, windowHeight int) {
+	width, height := getListSize(len(list.Items()), windowWidth, windowHeight)
+	list.SetSize(width, height)
+	list.FilterInput.Width = 0
+}
+
+func getListSize(itemCount, windowWidth, windowHeight int) (int, int) {
 	return windowWidth - listWidthMargin*2, getListHeight(itemCount, windowHeight)
 }
 

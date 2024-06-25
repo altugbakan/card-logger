@@ -26,6 +26,7 @@ func NewBackupListScreen(previousScreen Screen) BackupList {
 	}
 
 	list := utils.NewList(backups, components.BackupListItemDelegate{MaxNameLength: maxNameLength}, "backup")
+	utils.LogInfo("filter input width of the list: %d", list.FilterInput.Width)
 
 	return BackupList{
 		keyMap:         keyMap,
@@ -58,9 +59,7 @@ func (s BackupList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			return NewBackupScreen(WithMessage(res.Render())), nil
 		}
 	case tea.WindowSizeMsg:
-		width, height := utils.GetListSize(len(s.list.Items()), msg.Width, msg.Height)
-		utils.LogInfo("resizing backup list to %d x %d", width, height)
-		s.list.SetSize(width, height)
+		utils.SetListSize(&s.list, msg.Width, msg.Height)
 		return s, nil
 	}
 	var cmd tea.Cmd

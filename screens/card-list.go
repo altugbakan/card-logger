@@ -93,9 +93,7 @@ func (s CardList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			return s, nil
 		}
 	case tea.WindowSizeMsg:
-		width, height := utils.GetListSize(len(s.list.Items()), msg.Width, msg.Height)
-		utils.LogInfo("resizing card list to %d x %d", width, height)
-		s.list.SetSize(width, height)
+		utils.SetListSize(&s.list, msg.Width, msg.Height)
 		return s, nil
 	}
 
