@@ -35,6 +35,7 @@ func NewCardListScreen(abbr string) (CardList, error) {
 
 	items := []list.Item{}
 	maxNameLength := 0
+	maxPatternLength := 0
 	for _, card := range userCards {
 		item := components.CardListItem{
 			CardID:   card.CardID,
@@ -43,10 +44,15 @@ func NewCardListScreen(abbr string) (CardList, error) {
 			Patterns: card.Patterns,
 		}
 		maxNameLength = max(maxNameLength, len(card.Name))
+		maxPatternLength = max(maxPatternLength, len(utils.GetPatternItemText(card.Patterns)))
 		items = append(items, item)
 	}
 
-	itemDelegate := components.CardListItemDelegate{MaxNameLength: maxNameLength, SelectedIndex: 0}
+	itemDelegate := components.CardListItemDelegate{
+		MaxNameLength:    maxNameLength,
+		MaxPatternLength: maxPatternLength,
+		SelectedIndex:    0,
+	}
 	list := utils.NewList(items, itemDelegate, "card")
 
 	return CardList{

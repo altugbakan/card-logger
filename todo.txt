@@ -1,5 +1,4 @@
 Bug
-- Fix inconsistent text length on card-list due to amounts
 
 Feature
 

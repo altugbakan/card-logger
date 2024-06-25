@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/altugbakan/card-logger/utils"
 )
 
 type Set struct {
@@ -13,16 +15,11 @@ type Set struct {
 	TotalCards int
 }
 
-type Pattern struct {
-	Name     string
-	Quantity int
-}
-
 type UserCard struct {
 	CardID   int
 	Number   int
 	Name     string
-	Patterns []Pattern
+	Patterns []utils.Pattern
 }
 
 func GetSet(abbr string) (Set, error) {
@@ -115,7 +112,7 @@ func GetAllSetCardsOfUser(abbr string) ([]UserCard, error) {
 				return nil, err
 			}
 
-			card.Patterns = append(card.Patterns, Pattern{
+			card.Patterns = append(card.Patterns, utils.Pattern{
 				Name:     patternSplit[0],
 				Quantity: quantity,
 			})
