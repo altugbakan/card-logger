@@ -4,7 +4,6 @@ Bug
 - Fix centering list screen and add title
 
 Feature
-- Fetch DB from latest release or load latest backup
 
 Nice to Have
 - Add readme

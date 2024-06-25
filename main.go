@@ -21,9 +21,6 @@ type model struct {
 }
 
 func main() {
-	db.InitDB()
-	defer db.CloseDB()
-
 	if os.Getenv("DEBUG") == "true" {
 		f, err := tea.LogToFile("debug.log", "[info]")
 		if err != nil {
@@ -38,8 +35,19 @@ func main() {
 	width, height := utils.GetWindowSize()
 	utils.LogInfo("initial terminal size: %d x %d", width, height)
 
+	var currentScreen screens.Screen
+	if db.Exists() {
+		utils.LogInfo("database exists, starting with the title screen...")
+		currentScreen = screens.NewTitleScreen()
+		db.Init()
+		defer db.Close()
+	} else {
+		utils.LogInfo("database does not exist, starting with the initialize screen...")
+		currentScreen = screens.NewInitializeScreen()
+	}
+
 	initialModel := model{
-		currentScreen: screens.NewTitleScreen(),
+		currentScreen: currentScreen,
 		width:         width,
 		height:        height,
 	}

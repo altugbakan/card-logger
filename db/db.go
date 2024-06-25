@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"os"
 
 	"github.com/altugbakan/card-logger/utils"
 	_ "github.com/mattn/go-sqlite3"
@@ -10,14 +11,13 @@ import (
 var db *sql.DB
 
 const (
-	databaseFilePath = "cards.db"
-	backupDirectory  = "backups"
+	backupDirectory = "backups"
 )
 
-func InitDB() *sql.DB {
+func Init() *sql.DB {
 	if db == nil {
 		var err error
-		db, err = sql.Open("sqlite3", databaseFilePath)
+		db, err = sql.Open("sqlite3", utils.DatabaseFilePath)
 		if err != nil {
 			utils.LogError("could not open the database: %v", err)
 		}
@@ -25,21 +25,19 @@ func InitDB() *sql.DB {
 	return db
 }
 
-func CloseDB() {
+func Close() {
 	if db != nil {
 		db.Close()
+		db = nil
 	}
 }
 
-func IsDBFilled() bool {
-	var count int
-	err := db.QueryRow("SELECT COUNT(*) FROM Sets").Scan(&count)
-	if err != nil || count == 0 {
-		return false
-	}
-	return true
+func Reinit() {
+	Close()
+	db = Init()
 }
 
-func FetchAndFillDB() {
-	//TODO: Fetch from latest GitHub release
+func Exists() bool {
+	info, err := os.Stat(utils.DatabaseFilePath)
+	return !os.IsNotExist(err) && !(info.Size() == 0) && !info.IsDir()
 }

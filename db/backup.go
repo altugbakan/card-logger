@@ -68,7 +68,7 @@ func SaveAutoBackup() {
 
 func RestoreBackup(fileName string) error {
 	sourceFilePath := backupDirectory + "/" + fileName
-	destinationFile, err := os.Create(databaseFilePath)
+	destinationFile, err := os.Create(utils.DatabaseFilePath)
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func GetLatestBackup() (string, error) {
 }
 
 func saveBackup(destinationFilePath string, fileName string) (string, error) {
-	sourceFile, err := os.Open(databaseFilePath)
+	sourceFile, err := os.Open(utils.DatabaseFilePath)
 	if err != nil {
 		return "", err
 	}

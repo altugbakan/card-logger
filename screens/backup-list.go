@@ -73,6 +73,7 @@ func (s BackupList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			} else {
 				utils.LogInfo("backup restored")
 			}
+			db.Reinit()
 			return NewBackupScreen(WithMessage(res.Render())), nil
 		}
 	case tea.WindowSizeMsg:
