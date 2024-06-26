@@ -1,6 +1,8 @@
 package screens
 
 import (
+	"runtime"
+
 	"github.com/altugbakan/card-logger/db"
 	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
@@ -19,7 +21,12 @@ type Initialize struct {
 func NewInitializeScreen() Initialize {
 	keyMap := keymaps.NewInitializeKeyMap()
 	s := spinner.New()
-	s.Spinner = spinner.Dot
+	if runtime.GOOS == "windows" {
+		s.Spinner = spinner.Line
+	} else {
+		s.Spinner = spinner.Dot
+	}
+
 	s.Style = utils.ActionStyle
 
 	return Initialize{
