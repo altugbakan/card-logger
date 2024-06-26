@@ -37,7 +37,7 @@ jobs:
           if [ "${{ matrix.goos }}" = "windows" ]; then
             FILENAME=${FILENAME}.exe
           fi
-          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} CGO_ENABLED=1 go build -o $FILENAME
+          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $FILENAME
           zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip $FILENAME
 
       - name: Upload Artifact

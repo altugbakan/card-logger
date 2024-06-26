@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/altugbakan/card-logger/utils"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var db *sql.DB
@@ -17,7 +17,7 @@ const (
 func Init() *sql.DB {
 	if db == nil {
 		var err error
-		db, err = sql.Open("sqlite3", utils.DatabaseFilePath)
+		db, err = sql.Open("sqlite", utils.DatabaseFilePath)
 		if err != nil {
 			utils.LogError("could not open the database: %v", err)
 		}
