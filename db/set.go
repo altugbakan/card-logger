@@ -1,8 +1,6 @@
 package db
 
 import (
-	"database/sql"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -29,14 +27,8 @@ func GetSet(abbr string) (Set, error) {
 
 	var set Set
 	err := row.Scan(&set.Abbr, &set.Name, &set.TotalCards)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return Set{}, fmt.Errorf("no set found with abbreviation %s", abbr)
-		}
-		return Set{}, err
-	}
 
-	return set, nil
+	return set, err
 }
 
 func GetAllSets() ([]Set, error) {
