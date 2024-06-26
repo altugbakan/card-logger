@@ -7,7 +7,7 @@ import (
 func GetWindowSize() (int, int) {
 	width, height, err := term.GetSize(0)
 	if err != nil {
-		LogError("could not get terminal size, using defaults: %v", err)
+		LogWarning("could not get terminal size, using defaults: %v", err)
 		width = DefaultWidth
 		height = DefaultHeight
 	}
