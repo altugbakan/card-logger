@@ -33,8 +33,12 @@ jobs:
 
       - name: Build binary
         run: |
-          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o card-logger-${{ matrix.goos }}-${{ matrix.goarch }}
-          zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}
+          FILENAME=card-logger
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            FILENAME=${FILENAME}.exe
+          fi
+          env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $FILENAME
+          zip ${FILENAME}-${{ matrix.goos }}-${{ matrix.goarch }}.zip $FILENAME
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -58,7 +62,39 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: false
+
+  fetch_and_upload_previous_release_asset:
+    needs: create_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: List releases
+        id: list_releases
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.repository }}/releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Find the second latest release download URL for cards.db.zip
+        id: find_asset
+        run: |
+          RELEASES=$(echo '${{ steps.list_releases.outputs.data }}' | jq '[.[] | select(.assets[].name == "cards.db.zip")][1]')
+          ASSET_URL=$(echo $RELEASES | jq -r '.assets[] | select(.name == "cards.db.zip").browser_download_url')
+          echo "ASSET_URL=$ASSET_URL" >> $GITHUB_ENV
+
+      - name: Download cards.db.zip from the second latest release
+        run: |
+          curl -L -o cards.db.zip $ASSET_URL
+
+      - name: Upload cards.db.zip to the new release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./cards.db.zip
+          asset_name: cards.db.zip
+          asset_content_type: application/zip
 
   upload_assets:
     needs: create_release
