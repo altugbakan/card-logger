@@ -62,6 +62,10 @@ func RestoreBackup(fileName string) error {
 }
 
 func ListBackups() ([]string, error) {
+	if _, err := os.Stat(backupDirectory); os.IsNotExist(err) {
+		return []string{}, nil
+	}
+
 	files, err := os.ReadDir(backupDirectory)
 	if err != nil {
 		return nil, err
@@ -101,6 +105,13 @@ func GetLatestBackup() (string, error) {
 }
 
 func saveBackup(destinationFilePath string, fileName string) (string, error) {
+	if _, err := os.Stat(backupDirectory); os.IsNotExist(err) {
+		err := os.Mkdir(backupDirectory, 0755)
+		if err != nil {
+			return "", err
+		}
+	}
+
 	sourceFile, err := os.Open(utils.DatabaseFilePath)
 	if err != nil {
 		return "", err

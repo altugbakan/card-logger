@@ -26,7 +26,10 @@ func NewBackupListScreen(previousScreen Screen) BackupList {
 	}
 
 	list := utils.NewList(backups, components.BackupListItemDelegate{MaxNameLength: maxNameLength}, "backup")
-	utils.LogInfo("filter input width of the list: %d", list.FilterInput.Width)
+
+	if len(backups) == 0 {
+		keyMap.Select.SetEnabled(false)
+	}
 
 	return BackupList{
 		keyMap:         keyMap,
