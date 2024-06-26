@@ -12,40 +12,13 @@ import (
 	"github.com/altugbakan/card-logger/utils"
 )
 
-var hasChanges bool = false
-
 const dateTimeFormat = "2006-01-02_15-04-05"
+
+var hasChanges bool = false
 
 type backupFile struct {
 	name     string
 	dateTime time.Time
-}
-
-type byDateTime []backupFile
-
-func (s byDateTime) Len() int {
-	return len(s)
-}
-
-func (s byDateTime) Swap(i, j int) {
-	s[i], s[j] = s[j], s[i]
-}
-
-func (s byDateTime) Less(i, j int) bool {
-	return s[i].dateTime.After(s[j].dateTime)
-}
-
-func extractDateTimeFromName(name string) time.Time {
-	name = strings.TrimPrefix(name, "cards")
-	name = strings.TrimPrefix(name, "_auto")
-	name = strings.Split(name, ".")[0]
-	dateTimePart := strings.TrimLeft(name, "_")
-
-	t, err := time.Parse(dateTimeFormat, dateTimePart)
-	if err != nil {
-		return time.Time{}
-	}
-	return t
 }
 
 func SaveBackup() (string, error) {
@@ -102,7 +75,9 @@ func ListBackups() ([]string, error) {
 		}
 	}
 
-	sort.Sort(byDateTime(backups))
+	sort.Slice(backups, func(i, j int) bool {
+		return backups[i].dateTime.After(backups[j].dateTime)
+	})
 
 	var fileNames []string
 	for _, backup := range backups {
@@ -185,4 +160,17 @@ func saveAutoBackup() (string, error) {
 	}
 
 	return fileName, nil
+}
+
+func extractDateTimeFromName(name string) time.Time {
+	name = strings.TrimPrefix(name, "cards")
+	name = strings.TrimPrefix(name, "_auto")
+	name = strings.Split(name, ".")[0]
+	dateTimePart := strings.TrimLeft(name, "_")
+
+	t, err := time.Parse(dateTimeFormat, dateTimePart)
+	if err != nil {
+		return time.Time{}
+	}
+	return t
 }
