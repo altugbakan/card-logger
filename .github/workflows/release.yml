@@ -38,13 +38,14 @@ jobs:
             FILENAME=${FILENAME}.exe
           fi
           env GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o $FILENAME
-          zip ${FILENAME}-${{ matrix.goos }}-${{ matrix.goarch }}.zip $FILENAME
+          zip card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip $FILENAME
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
           name: card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
           path: card-logger-${{ matrix.goos }}-${{ matrix.goarch }}.zip
+          if-no-files-found: error
 
   create_release:
     needs: build
