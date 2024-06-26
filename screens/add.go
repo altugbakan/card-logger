@@ -312,7 +312,7 @@ func removeCard(set string, number int, pattern string) (addCardResult, error) {
 func checkSetExists(set string) bool {
 	_, err := db.GetSet(set)
 
-	if err != sql.ErrNoRows {
+	if err != nil && err != sql.ErrNoRows {
 		utils.LogError("could not get set %s: %v", set, err)
 		return false
 	}
