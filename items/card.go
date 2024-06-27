@@ -1,4 +1,4 @@
-package components
+package items
 
 import (
 	"fmt"
@@ -10,28 +10,28 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type CardListItem struct {
+type Card struct {
 	CardID   int
 	Number   int
 	Name     string
 	Patterns []utils.Pattern
 }
 
-func (c CardListItem) FilterValue() string {
+func (c Card) FilterValue() string {
 	return c.Name
 }
 
-type CardListItemDelegate struct {
+type CardDelegate struct {
 	MaxNameLength    int
 	MaxPatternLength int
 	SelectedIndex    int
 }
 
-func (d CardListItemDelegate) Height() int                               { return 1 }
-func (d CardListItemDelegate) Spacing() int                              { return 0 }
-func (d CardListItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d CardListItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	item, ok := listItem.(CardListItem)
+func (d CardDelegate) Height() int                               { return 1 }
+func (d CardDelegate) Spacing() int                              { return 0 }
+func (d CardDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d CardDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	item, ok := listItem.(Card)
 	if !ok {
 		return
 	}
@@ -51,5 +51,5 @@ func (d CardListItemDelegate) Render(w io.Writer, m list.Model, index int, listI
 		display = lipgloss.JoinHorizontal(lipgloss.Center, number, itemName, patternText)
 	}
 
-	fmt.Fprint(w, display)
+	io.WriteString(w, display)
 }

@@ -79,7 +79,8 @@ func GetAllSetCardsOfUser(abbr string) ([]UserCard, error) {
 	GROUP BY 
 		CardNumber, CardName
 	ORDER BY 
-		CardNumber;`
+		CardNumber;
+	`
 
 	rows, err := db.Query(query, abbr)
 	if err != nil {

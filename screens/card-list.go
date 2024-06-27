@@ -1,8 +1,8 @@
 package screens
 
 import (
-	"github.com/altugbakan/card-logger/components"
 	"github.com/altugbakan/card-logger/db"
+	"github.com/altugbakan/card-logger/items"
 	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -15,7 +15,7 @@ type CardList struct {
 	keyMap       keymaps.Set
 	list         list.Model
 	name         string
-	itemDelegate components.CardListItemDelegate
+	itemDelegate items.CardDelegate
 }
 
 func NewCardListScreen(abbr string) (CardList, error) {
@@ -23,37 +23,22 @@ func NewCardListScreen(abbr string) (CardList, error) {
 
 	set, err := db.GetSet(abbr)
 	if err != nil {
-		utils.LogError("Error getting set from db: %v", err)
+		utils.LogError("error getting set from db: %v", err)
 		return CardList{}, err
 	}
 
-	userCards, err := db.GetAllSetCardsOfUser(abbr)
+	cardItems, maxNameLength, maxPatternLength, err := getCardItems(abbr)
 	if err != nil {
-		utils.LogError("Error getting all set cards of user from db: %v", err)
+		utils.LogError("error getting card items: %v", err)
 		return CardList{}, err
 	}
 
-	items := []list.Item{}
-	maxNameLength := 0
-	maxPatternLength := 0
-	for _, card := range userCards {
-		item := components.CardListItem{
-			CardID:   card.CardID,
-			Number:   card.Number,
-			Name:     card.Name,
-			Patterns: card.Patterns,
-		}
-		maxNameLength = max(maxNameLength, len(card.Name))
-		maxPatternLength = max(maxPatternLength, len(utils.GetPatternItemText(card.Patterns)))
-		items = append(items, item)
-	}
-
-	itemDelegate := components.CardListItemDelegate{
+	itemDelegate := items.CardDelegate{
 		MaxNameLength:    maxNameLength,
 		MaxPatternLength: maxPatternLength,
 		SelectedIndex:    0,
 	}
-	list := utils.NewList(items, itemDelegate, "card")
+	list := utils.NewList(cardItems, itemDelegate, "card")
 
 	return CardList{
 		keyMap:       keyMap,
@@ -82,7 +67,7 @@ func (s CardList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			s.list.SetDelegate(s.itemDelegate)
 			return s, nil
 		case key.Matches(msg, s.keyMap.Right):
-			selectedItem, ok := s.list.SelectedItem().(components.CardListItem)
+			selectedItem, ok := s.list.SelectedItem().(items.Card)
 			if !ok {
 				utils.LogError("error casting selected item to CardItem")
 				return s, nil
@@ -118,7 +103,7 @@ func (s CardList) Help() string {
 }
 
 func (s *CardList) handleAdd() {
-	selectedItem, ok := s.list.SelectedItem().(components.CardListItem)
+	selectedItem, ok := s.list.SelectedItem().(items.Card)
 	if !ok {
 		utils.LogError("error casting selected item to CardItem")
 		return
@@ -137,7 +122,7 @@ func (s *CardList) handleAdd() {
 }
 
 func (s *CardList) handleRemove() {
-	selectedItem, ok := s.list.SelectedItem().(components.CardListItem)
+	selectedItem, ok := s.list.SelectedItem().(items.Card)
 	if !ok {
 		utils.LogError("error casting selected item to CardItem")
 		return
@@ -153,4 +138,28 @@ func (s *CardList) handleRemove() {
 	}
 	selectedItem.Patterns[s.itemDelegate.SelectedIndex].Quantity--
 	s.list.SetItem(s.list.Index(), selectedItem)
+}
+
+func getCardItems(abbr string) ([]list.Item, int, int, error) {
+	userCards, err := db.GetAllSetCardsOfUser(abbr)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	cardItems := make([]list.Item, len(userCards))
+	maxNameLength := 0
+	maxPatternLength := 0
+	for i, card := range userCards {
+		item := items.Card{
+			CardID:   card.CardID,
+			Number:   card.Number,
+			Name:     card.Name,
+			Patterns: card.Patterns,
+		}
+		maxNameLength = max(maxNameLength, len(card.Name))
+		maxPatternLength = max(maxPatternLength, len(utils.GetPatternItemText(card.Patterns)))
+		cardItems[i] = item
+	}
+
+	return cardItems, maxNameLength, maxPatternLength, nil
 }

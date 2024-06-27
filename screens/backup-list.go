@@ -1,8 +1,8 @@
 package screens
 
 import (
-	"github.com/altugbakan/card-logger/components"
 	"github.com/altugbakan/card-logger/db"
+	"github.com/altugbakan/card-logger/items"
 	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -25,7 +25,7 @@ func NewBackupListScreen(previousScreen Screen) BackupList {
 		utils.LogError("could not get all backups: %v", err)
 	}
 
-	list := utils.NewList(backups, components.BackupListItemDelegate{MaxNameLength: maxNameLength}, "backup")
+	list := utils.NewList(backups, items.BackupDelegate{MaxNameLength: maxNameLength}, "backup")
 
 	if len(backups) == 0 {
 		keyMap.Select.SetEnabled(false)
@@ -86,19 +86,19 @@ func getBackupItems() ([]list.Item, int, error) {
 		return nil, 0, err
 	}
 
-	backups := []list.Item{}
+	backups := make([]list.Item, len(allBackups))
 	maxNameLength := 0
-	for _, backup := range allBackups {
-		item := components.NewBackupItem(backup)
+	for i, backup := range allBackups {
+		item := items.NewBackupItem(backup)
 		maxNameLength = max(maxNameLength, len(backup))
-		backups = append(backups, item)
+		backups[i] = item
 	}
 
 	return backups, maxNameLength, nil
 }
 
 func (s *BackupList) restoreBackup() (utils.Message, error) {
-	i, ok := s.list.SelectedItem().(components.BackupListItem)
+	i, ok := s.list.SelectedItem().(items.Backup)
 	if ok {
 		err := db.RestoreBackup(i.Name)
 		if err != nil {

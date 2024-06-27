@@ -1,7 +1,6 @@
-package components
+package items
 
 import (
-	"fmt"
 	"io"
 	"strconv"
 
@@ -12,18 +11,18 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type SetListItem struct {
+type Set struct {
 	Abbr  string
 	Name  string
 	Total int
 	Owned int
 }
 
-func (i SetListItem) FilterValue() string {
+func (i Set) FilterValue() string {
 	return i.Name
 }
 
-type SetListItemDelegate struct {
+type SetDelegate struct {
 	MaxNameLength int
 }
 
@@ -32,11 +31,11 @@ const (
 	progressBarWidth       = 20
 )
 
-func (d SetListItemDelegate) Height() int                               { return utils.ListItemHeight }
-func (d SetListItemDelegate) Spacing() int                              { return utils.ListItemSpacing }
-func (d SetListItemDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
-func (d SetListItemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	item, ok := listItem.(SetListItem)
+func (d SetDelegate) Height() int                               { return utils.ItemHeight }
+func (d SetDelegate) Spacing() int                              { return utils.ItemSpacing }
+func (d SetDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd { return nil }
+func (d SetDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	item, ok := listItem.(Set)
 	if !ok {
 		return
 	}
@@ -63,5 +62,5 @@ func (d SetListItemDelegate) Render(w io.Writer, m list.Model, index int, listIt
 		display = utils.TextStyle.Render("  " + itemName + progressBar.ViewAs(percent) + ownedAndTotal)
 	}
 
-	fmt.Fprint(w, display)
+	io.WriteString(w, display)
 }

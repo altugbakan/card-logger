@@ -5,17 +5,16 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 )
 
-type SetList struct {
+type MissingList struct {
 	Back     key.Binding
 	Navigate key.Binding
-	Select   key.Binding
-	Missing  key.Binding
+	Toggle   key.Binding
 	Search   key.Binding
 	help     help.Model
 }
 
-func NewListKeyMap() SetList {
-	return SetList{
+func NewMissingKeyMap() MissingList {
+	return MissingList{
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
 			key.WithHelp("esc", "go back"),
@@ -24,13 +23,9 @@ func NewListKeyMap() SetList {
 			key.WithKeys("up", "down"),
 			key.WithHelp("↑/↓", "navigate"),
 		),
-		Select: key.NewBinding(
-			key.WithKeys("enter"),
-			key.WithHelp("enter", "select"),
-		),
-		Missing: key.NewBinding(
-			key.WithKeys("m"),
-			key.WithHelp("m", "show missing"),
+		Toggle: key.NewBinding(
+			key.WithKeys("t"),
+			key.WithHelp("t", "toggle"),
 		),
 		Search: key.NewBinding(
 			key.WithKeys("/"),
@@ -40,21 +35,21 @@ func NewListKeyMap() SetList {
 	}
 }
 
-func (k SetList) Help() string {
+func (k MissingList) Help() string {
 	return k.help.View(k)
 }
 
-func (k SetList) ShortHelp() []key.Binding {
+func (k MissingList) ShortHelp() []key.Binding {
 	return []key.Binding{
 		k.Back,
 		k.Navigate,
-		k.Select,
-		k.Missing,
+		k.Toggle,
+		k.Search,
 	}
 }
 
-func (k SetList) FullHelp() [][]key.Binding {
+func (k MissingList) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Back, k.Navigate, k.Select, k.Missing},
+		{k.Back, k.Navigate, k.Toggle, k.Search},
 	}
 }

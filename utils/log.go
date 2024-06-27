@@ -10,11 +10,11 @@ func LogInfo(format string, v ...any) {
 }
 
 func LogWarning(format string, v ...any) {
-	log.SetPrefix(WarningStyle.Render("[WARNING] "))
+	log.SetPrefix(WarningStyle.Render("[WARN] "))
 	log.Printf(format, v...)
 }
 
 func LogError(format string, v ...any) {
-	log.SetPrefix(ErrorStyle.Render("[ERROR] "))
+	log.SetPrefix(ErrorStyle.Render("[ERRO] "))
 	log.Fatalf(format, v...)
 }

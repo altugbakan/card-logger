@@ -1,8 +1,8 @@
 package screens
 
 import (
-	"github.com/altugbakan/card-logger/components"
 	"github.com/altugbakan/card-logger/db"
+	"github.com/altugbakan/card-logger/items"
 	"github.com/altugbakan/card-logger/keymaps"
 	"github.com/altugbakan/card-logger/utils"
 	"github.com/charmbracelet/bubbles/key"
@@ -22,33 +22,17 @@ func NewSetListScreen() (SetList, error) {
 
 	sets, err := db.GetAllSets()
 	if err != nil {
+		utils.LogError("could not get all sets: %v", err)
 		return SetList{}, err
 	}
 
-	userCardCounts, err := db.GetUserCardCountsBySet()
+	setItems, maxNameLength, err := getSetItems()
 	if err != nil {
+		utils.LogError("could not get set items: %v", err)
 		return SetList{}, err
 	}
 
-	items := []list.Item{}
-	for _, set := range sets {
-		item := components.SetListItem{
-			Abbr:  set.Abbr,
-			Name:  set.Name,
-			Total: set.TotalCards,
-			Owned: userCardCounts[set.Abbr],
-		}
-		items = append(items, item)
-	}
-
-	maxNameLength := 0
-	for _, item := range items {
-		if len(item.FilterValue()) > maxNameLength {
-			maxNameLength = len(item.FilterValue())
-		}
-	}
-
-	list := utils.NewList(items, components.SetListItemDelegate{MaxNameLength: maxNameLength}, "set")
+	list := utils.NewList(setItems, items.SetDelegate{MaxNameLength: maxNameLength}, "set")
 
 	return SetList{
 		keyMap: keyMap,
@@ -71,7 +55,7 @@ func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			return NewTitleScreen(), nil
 		case key.Matches(msg, s.keyMap.Select):
-			set, ok := s.list.SelectedItem().(components.SetListItem)
+			set, ok := s.list.SelectedItem().(items.Set)
 			if !ok {
 				utils.LogError("error casting selected item to SetItem")
 				return s, nil
@@ -81,8 +65,19 @@ func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 				utils.LogError("error creating set screen: %v", err)
 				return s, nil
 			}
-
 			return setScreen, nil
+		case key.Matches(msg, s.keyMap.Missing):
+			set, ok := s.list.SelectedItem().(items.Set)
+			if !ok {
+				utils.LogError("error casting selected item to SetItem")
+				return s, nil
+			}
+			missingScreen, err := NewMissingListScreen(set.Abbr)
+			if err != nil {
+				utils.LogError("error creating missing screen: %v", err)
+				return s, nil
+			}
+			return missingScreen, nil
 		}
 	case tea.WindowSizeMsg:
 		utils.SetListSize(&s.list, msg.Width, msg.Height)
@@ -102,4 +97,31 @@ func (s SetList) View() string {
 
 func (s SetList) Help() string {
 	return s.keyMap.Help()
+}
+
+func getSetItems() ([]list.Item, int, error) {
+	sets, err := db.GetAllSets()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	userCardCounts, err := db.GetUserCardCountsBySet()
+	if err != nil {
+		return nil, 0, err
+	}
+
+	setItems := make([]list.Item, len(sets))
+	maxNameLength := 0
+	for i, set := range sets {
+		item := items.Set{
+			Abbr:  set.Abbr,
+			Name:  set.Name,
+			Total: set.TotalCards,
+			Owned: userCardCounts[set.Abbr],
+		}
+		maxNameLength = max(maxNameLength, len(item.FilterValue()))
+		setItems[i] = item
+	}
+
+	return setItems, maxNameLength, nil
 }

@@ -42,6 +42,6 @@ func getListHeight(itemCount, windowHeight int) int {
 	if itemCount == 0 {
 		return 1
 	}
-	listMaxSize := itemCount*ListItemHeight + listHeightMargin
+	listMaxSize := itemCount*ItemHeight + listHeightMargin
 	return min(listMaxSize, windowHeight-listHeightMargin*2-TotalHelpWidth)
 }

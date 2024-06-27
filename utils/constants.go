@@ -6,6 +6,6 @@ const (
 	DefaultWidth     = 80
 	DefaultHeight    = 30
 	DatabaseFilePath = "cards.db"
-	ListItemHeight   = 1
-	ListItemSpacing  = 0
+	ItemHeight       = 1
+	ItemSpacing      = 0
 )
