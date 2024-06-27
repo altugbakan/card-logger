@@ -24,6 +24,10 @@ You can list what cards you have using the `[L]`ist menu. You can select a set w
 
 ![List GIF](./assets/images/list.gif)
 
+On the list menu, you can view which cards you are missing using `[m]`. You can move around using the `[arrow keys]`, and use `[/]` to search for a card. You can `[t]`oggle between cards you are completely missing, or cards you have missing patterns for.
+
+![Missing GIF](./assets/images/missing.gif)
+
 ### Backups
 
 You can create a backup of your database using the `[B]`ackups menu using the `[s]`ave button, which will be saved in the `./backups` folder. If the tool detects an unsaved change in the user cards, an backup is saved automatically (max 10). You can `[l]`oad a backup by selecting one and pressing `[enter]`.
