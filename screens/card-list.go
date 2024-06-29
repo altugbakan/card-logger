@@ -63,19 +63,9 @@ func (s CardList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			return listScreen, nil
 		case key.Matches(msg, s.keyMap.Left):
-			s.itemDelegate.SelectedIndex = max(0, s.itemDelegate.SelectedIndex-1)
-			s.list.SetDelegate(s.itemDelegate)
-			return s, nil
+			return s.handleLeft()
 		case key.Matches(msg, s.keyMap.Right):
-			selectedItem, ok := s.list.SelectedItem().(items.Card)
-			if !ok {
-				utils.LogError("error casting selected item to CardItem")
-				return s, nil
-			}
-			s.itemDelegate.SelectedIndex = min(s.itemDelegate.SelectedIndex+1,
-				len(selectedItem.Patterns)-1)
-			s.list.SetDelegate(s.itemDelegate)
-			return s, nil
+			return s.handleRight()
 		case key.Matches(msg, s.keyMap.Add):
 			s.handleAdd()
 			return s, nil
@@ -138,6 +128,70 @@ func (s *CardList) handleRemove() {
 	}
 	selectedItem.Patterns[s.itemDelegate.SelectedIndex].Quantity--
 	s.list.SetItem(s.list.Index(), selectedItem)
+}
+
+func (s *CardList) handleLeft() (Screen, tea.Cmd) {
+	if s.itemDelegate.SelectedIndex == 0 {
+		prevSelectedItem, ok := s.list.SelectedItem().(items.Card)
+		if !ok {
+			utils.LogError("error casting selected item to CardItem")
+			return s, nil
+		}
+
+		var cmd tea.Cmd
+		s.list, cmd = s.list.Update(tea.KeyMsg{Type: tea.KeyLeft})
+
+		selectedItem, ok := s.list.SelectedItem().(items.Card)
+		if !ok {
+			utils.LogError("error casting selected item to CardItem")
+			return s, nil
+		}
+
+		if selectedItem.CardID == prevSelectedItem.CardID {
+			return s, cmd
+		}
+
+		s.itemDelegate.SelectedIndex = len(selectedItem.Patterns) - 1
+		s.list.SetDelegate(s.itemDelegate)
+
+		return s, cmd
+	}
+
+	s.itemDelegate.SelectedIndex--
+	s.list.SetDelegate(s.itemDelegate)
+	return s, nil
+}
+
+func (s *CardList) handleRight() (Screen, tea.Cmd) {
+	selectedItem, ok := s.list.SelectedItem().(items.Card)
+	if !ok {
+		utils.LogError("error casting selected item to CardItem")
+		return s, nil
+	}
+
+	if s.itemDelegate.SelectedIndex == len(selectedItem.Patterns)-1 {
+		var cmd tea.Cmd
+		s.list, cmd = s.list.Update(tea.KeyMsg{Type: tea.KeyRight})
+
+		nextSelectedItem, ok := s.list.SelectedItem().(items.Card)
+		if !ok {
+			utils.LogError("error casting selected item to CardItem")
+			return s, nil
+		}
+
+		if nextSelectedItem.CardID == selectedItem.CardID {
+			return s, cmd
+		}
+
+		s.itemDelegate.SelectedIndex = 0
+		s.list.SetDelegate(s.itemDelegate)
+
+		return s, cmd
+	}
+
+	s.itemDelegate.SelectedIndex++
+	s.list.SetDelegate(s.itemDelegate)
+	return s, nil
 }
 
 func getCardItems(abbr string) ([]list.Item, int, int, error) {
