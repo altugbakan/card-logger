@@ -56,6 +56,10 @@ func (s CardList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 		}
 		switch {
 		case key.Matches(msg, s.keyMap.Back):
+			if s.list.IsFiltered() {
+				s.list.ResetFilter()
+				return s, nil
+			}
 			listScreen, err := NewSetListScreen()
 			if err != nil {
 				utils.LogError("Error creating list screen: %v", err)
