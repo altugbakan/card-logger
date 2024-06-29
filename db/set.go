@@ -22,7 +22,7 @@ type UserCard struct {
 
 func GetSet(abbr string) (Set, error) {
 	abbr = strings.ToUpper(abbr)
-	query := `SELECT abbr, name, total_cards FROM Sets WHERE abbr = ?`
+	query := `SELECT abbr, name, total_cards FROM sets WHERE abbr = ?`
 	row := db.QueryRow(query, abbr)
 
 	var set Set
@@ -32,7 +32,7 @@ func GetSet(abbr string) (Set, error) {
 }
 
 func GetAllSets() ([]Set, error) {
-	query := `SELECT abbr, name, total_cards FROM Sets`
+	query := `SELECT abbr, name, total_cards FROM sets`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -55,31 +55,31 @@ func GetAllSets() ([]Set, error) {
 
 func GetAllSetCardsOfUser(abbr string) ([]UserCard, error) {
 	query := `
-	WITH CardPatternQuantities AS (
+	WITH card_pattern_quantities AS (
 		SELECT
-			Cards.number AS CardNumber,
-			Cards.name AS CardName,
-			Cards.id AS CardID,
-			RP.pattern || ':' || COALESCE(UC.quantity, '0') AS PatternQuantity
+			cards.number AS card_number,
+			cards.name AS card_name,
+			cards.id AS card_id,
+			rp.pattern || ':' || COALESCE(uc.quantity, '0') AS pattern_quantity
 		FROM
-			Cards
-			JOIN Sets ON Cards.set_abbr = Sets.abbr
-			JOIN RarityPatterns RP ON Cards.set_abbr = RP.set_abbr AND Cards.rarity = RP.rarity
-			LEFT JOIN UserCards UC ON Cards.id = UC.card_id AND RP.pattern = UC.pattern
+			cards
+			JOIN sets ON cards.set_abbr = sets.abbr
+			JOIN rarity_patterns rp ON cards.set_abbr = rp.set_abbr AND cards.rarity = rp.rarity
+			LEFT JOIN user_cards uc ON cards.id = uc.card_id AND rp.pattern = uc.pattern
 		WHERE
-			Sets.abbr = ?
+			sets.abbr = ?
 		)
 	SELECT 
-		CardID,
-		CardNumber,
-		CardName,
-		GROUP_CONCAT(PatternQuantity) AS Patterns
+		card_id,
+		card_number,
+		card_name,
+		GROUP_CONCAT(pattern_quantity) AS patterns
 	FROM 
-		CardPatternQuantities
+		card_pattern_quantities
 	GROUP BY 
-		CardNumber, CardName
+		card_number, card_name
 	ORDER BY 
-		CardNumber;
+		card_number;
 	`
 
 	rows, err := db.Query(query, abbr)

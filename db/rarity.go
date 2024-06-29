@@ -2,7 +2,7 @@ package db
 
 func IsPatternValidForRarity(setAbbr, rarity, pattern string) (bool, error) {
 	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM RarityPatterns WHERE set_abbr = ? AND rarity = ? AND pattern = ?)`
+	query := `SELECT EXISTS(SELECT 1 FROM rarity_patterns WHERE set_abbr = ? AND rarity = ? AND pattern = ?)`
 	err := db.QueryRow(query, setAbbr, rarity, pattern).Scan(&exists)
 	if err != nil {
 		return false, err
@@ -12,7 +12,7 @@ func IsPatternValidForRarity(setAbbr, rarity, pattern string) (bool, error) {
 
 func GetPatternsForRarity(setAbbr, rarity string) ([]string, error) {
 	patterns := []string{}
-	query := `SELECT pattern FROM RarityPatterns WHERE set_abbr = ? AND rarity = ?`
+	query := `SELECT pattern FROM rarity_patterns WHERE set_abbr = ? AND rarity = ?`
 	rows, err := db.Query(query, setAbbr, rarity)
 	if err != nil {
 		return nil, err
