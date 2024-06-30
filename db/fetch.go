@@ -26,6 +26,7 @@ func FetchLatestRelease() tea.Msg {
 		utils.LogError("failed to download file: %v", err)
 		return DownloadFailedMsg{}
 	}
+	utils.LogInfo("downloaded file from %s", dbURL)
 
 	if err := unzipAndSave(zipData, getDatabasePath()); err != nil {
 		utils.LogError("failed to unzip and save file: %v", err)
