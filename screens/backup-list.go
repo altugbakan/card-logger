@@ -12,13 +12,13 @@ import (
 )
 
 type BackupList struct {
-	keyMap         keymaps.SetList
+	keyMap         keymaps.BackupList
 	list           list.Model
 	previousScreen Screen
 }
 
 func NewBackupListScreen(previousScreen Screen) BackupList {
-	keyMap := keymaps.NewListKeyMap()
+	keyMap := keymaps.NewBackupListKeyMap()
 
 	backups, maxNameLength, err := getBackupItems()
 	if err != nil {

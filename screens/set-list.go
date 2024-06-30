@@ -18,7 +18,7 @@ type SetList struct {
 }
 
 func NewSetListScreen() (SetList, error) {
-	keyMap := keymaps.NewListKeyMap()
+	keyMap := keymaps.NewSetListKeyMap()
 
 	sets, err := db.GetAllSets()
 	if err != nil {

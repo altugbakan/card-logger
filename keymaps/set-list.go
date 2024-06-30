@@ -14,7 +14,7 @@ type SetList struct {
 	help     help.Model
 }
 
-func NewListKeyMap() SetList {
+func NewSetListKeyMap() SetList {
 	return SetList{
 		Back: key.NewBinding(
 			key.WithKeys("esc"),
