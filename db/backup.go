@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strings"
@@ -23,9 +24,9 @@ type backupFile struct {
 
 func SaveBackup() (string, error) {
 	fileName := fmt.Sprintf("cards_%s.db", time.Now().Format(dateTimeFormat))
-	destinationFilePath := backupDirectory + "/" + fileName
+	destinationFilePath := filepath.Join(getBackupDirectory(), fileName)
 
-	return saveBackup(destinationFilePath, fileName)
+	return fileName, saveBackup(destinationFilePath)
 }
 
 func SaveAutoBackup() {
@@ -40,13 +41,18 @@ func SaveAutoBackup() {
 }
 
 func RestoreBackup(fileName string) error {
-	sourceFilePath := backupDirectory + "/" + fileName
-	destinationFile, err := os.Create(utils.DatabaseFilePath)
+	err := os.MkdirAll(getDatabaseDirectory(), 0755)
+	if err != nil {
+		return err
+	}
+
+	destinationFile, err := os.Create(getDatabasePath())
 	if err != nil {
 		return err
 	}
 	defer destinationFile.Close()
 
+	sourceFilePath := filepath.Join(getBackupDirectory(), fileName)
 	sourceFile, err := os.Open(sourceFilePath)
 	if err != nil {
 		return err
@@ -62,6 +68,7 @@ func RestoreBackup(fileName string) error {
 }
 
 func ListBackups() ([]string, error) {
+	backupDirectory := getBackupDirectory()
 	if _, err := os.Stat(backupDirectory); os.IsNotExist(err) {
 		return []string{}, nil
 	}
@@ -104,33 +111,31 @@ func GetLatestBackup() (string, error) {
 	return files[0], nil
 }
 
-func saveBackup(destinationFilePath string, fileName string) (string, error) {
-	if _, err := os.Stat(backupDirectory); os.IsNotExist(err) {
-		err := os.Mkdir(backupDirectory, 0755)
-		if err != nil {
-			return "", err
-		}
+func saveBackup(destinationFilePath string) error {
+	err := os.MkdirAll(getBackupDirectory(), 0755)
+	if err != nil {
+		return err
 	}
 
-	sourceFile, err := os.Open(utils.DatabaseFilePath)
+	sourceFile, err := os.Open(getDatabasePath())
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer sourceFile.Close()
 
 	destinationFile, err := os.Create(destinationFilePath)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer destinationFile.Close()
 
 	_, err = io.Copy(destinationFile, sourceFile)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	hasChanges = false
-	return fileName, nil
+	return nil
 }
 
 func saveAutoBackup() (string, error) {
@@ -139,14 +144,14 @@ func saveAutoBackup() (string, error) {
 	}
 
 	fileName := fmt.Sprintf("cards_auto_%s.db", time.Now().Format(dateTimeFormat))
-	destinationFilePath := backupDirectory + "/" + fileName
+	destinationFilePath := filepath.Join(getBackupDirectory(), fileName)
 
-	fileName, err := saveBackup(destinationFilePath, fileName)
+	err := saveBackup(destinationFilePath)
 	if err != nil {
 		return "", err
 	}
 
-	files, err := os.ReadDir(backupDirectory)
+	files, err := os.ReadDir(getBackupDirectory())
 	if err != nil {
 		return "", err
 	}
@@ -160,8 +165,8 @@ func saveAutoBackup() (string, error) {
 
 	if len(fileNames) > 10 {
 		sort.Strings(fileNames)
-		oldestAutoBackup := fileNames[0]
-		err := os.Remove(backupDirectory + "/" + oldestAutoBackup)
+		oldestAutoBackup := filepath.Join(getBackupDirectory(), fileNames[0])
+		err := os.Remove(oldestAutoBackup)
 		if err != nil {
 			utils.LogWarning("could not remove oldest auto backup %s: %v",
 				oldestAutoBackup, err)
@@ -184,4 +189,9 @@ func extractDateTimeFromName(name string) time.Time {
 		return time.Time{}
 	}
 	return t
+}
+
+func getBackupDirectory() string {
+	config := utils.GetConfig()
+	return filepath.Join("backups", config.Type)
 }

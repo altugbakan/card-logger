@@ -52,12 +52,14 @@ func (s BackupList) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			return s.previousScreen, nil
 		case key.Matches(msg, s.keyMap.Select):
-			res, err := s.restoreBackup()
-			if err != nil {
-				utils.LogError("could not restore backup: %v", err)
-			} else {
-				utils.LogInfo("backup restored")
+			res := s.restoreBackup()
+			switch res := res.(type) {
+			case utils.ErrorMessage:
+				utils.LogError(res.Text)
+			case utils.InfoMessage:
+				utils.LogInfo(res.Text)
 			}
+
 			db.Reinit()
 			return NewBackupScreen(WithMessage(res.Render())), nil
 		}
@@ -97,15 +99,15 @@ func getBackupItems() ([]list.Item, int, error) {
 	return backups, maxNameLength, nil
 }
 
-func (s *BackupList) restoreBackup() (utils.Message, error) {
+func (s *BackupList) restoreBackup() utils.Message {
 	i, ok := s.list.SelectedItem().(items.Backup)
 	if ok {
 		err := db.RestoreBackup(i.Name)
 		if err != nil {
-			return utils.NewErrorMessage("could not restore backup"), err
+			return utils.NewErrorMessage("could not restore backup: %v", err)
 		} else {
-			return utils.NewInfoMessage("backup restored"), nil
+			return utils.NewInfoMessage("backup restored")
 		}
 	}
-	return utils.NewErrorMessage("could not restore backup"), nil
+	return utils.NewErrorMessage("could not restore backup due to an error")
 }

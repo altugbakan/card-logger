@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"os"
+	"path/filepath"
 
 	"github.com/altugbakan/card-logger/utils"
 	_ "modernc.org/sqlite"
@@ -10,14 +11,10 @@ import (
 
 var db *sql.DB
 
-const (
-	backupDirectory = "backups"
-)
-
 func Init() *sql.DB {
 	if db == nil {
 		var err error
-		db, err = sql.Open("sqlite", utils.DatabaseFilePath)
+		db, err = sql.Open("sqlite", getDatabasePath())
 		if err != nil {
 			utils.LogError("could not open the database: %v", err)
 		}
@@ -38,6 +35,15 @@ func Reinit() {
 }
 
 func Exists() bool {
-	info, err := os.Stat(utils.DatabaseFilePath)
+	info, err := os.Stat(getDatabasePath())
 	return !os.IsNotExist(err) && !(info.Size() == 0) && !info.IsDir()
+}
+
+func getDatabaseDirectory() string {
+	config := utils.GetConfig()
+	return filepath.Join("database", config.Type)
+}
+
+func getDatabasePath() string {
+	return filepath.Join(getDatabaseDirectory(), "cards.db")
 }

@@ -1,4 +1,6 @@
 *.db
+database/
 backups/
 debug.log
 card-logger*
+config.json

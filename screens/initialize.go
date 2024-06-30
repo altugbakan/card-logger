@@ -50,9 +50,9 @@ func (s Initialize) Update(msg tea.Msg) (Screen, tea.Cmd) {
 			}
 			utils.LogInfo("initializing by downloading database")
 			s.startDownloading()
-			return s, tea.Batch(utils.FetchLatestRelease, s.spinner.Tick)
+			return s, tea.Batch(db.FetchLatestRelease, s.spinner.Tick)
 		}
-	case utils.DownloadCompleteMsg:
+	case db.DownloadCompleteMsg:
 		utils.LogInfo("database download complete")
 		db.Init()
 		return NewTitleScreen(), nil

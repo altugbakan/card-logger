@@ -76,26 +76,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Find the second latest release download URL for cards.db.zip
-        id: find_asset
+      - name: Find and download all cards_*.zip from the second latest release
         run: |
-          RELEASES=$(echo '${{ steps.list_releases.outputs.data }}' | jq '[.[] | select(.assets[].name == "cards.db.zip")][1]')
-          ASSET_URL=$(echo $RELEASES | jq -r '.assets[] | select(.name == "cards.db.zip").browser_download_url')
-          echo "ASSET_URL=$ASSET_URL" >> $GITHUB_ENV
+          RELEASES=$(echo '${{ steps.list_releases.outputs.data }}' | jq '[.[] | select(.assets[].name | test("cards_.*\\.zip"))][1]')
+          ASSET_URLS=$(echo $RELEASES | jq -r '.assets[] | select(.name | test("cards_.*\\.zip")).browser_download_url')
+          for url in $ASSET_URLS; do
+            ASSET_NAME=$(basename $url)
+            curl -L -o $ASSET_NAME $url
+            echo "::set-output name=${ASSET_NAME}::${url}"
+          done
+        id: download_assets
 
-      - name: Download cards.db.zip from the second latest release
+      - name: Upload all cards_*.zip to the new release
         run: |
-          curl -L -o cards.db.zip $ASSET_URL
-
-      - name: Upload cards.db.zip to the new release
-        uses: actions/upload-release-asset@v1
+          for asset in cards_*.zip; do
+            echo "Uploading $asset"
+            gh release upload ${{ needs.create_release.outputs.upload_url }} $asset --clobber
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./cards.db.zip
-          asset_name: cards.db.zip
-          asset_content_type: application/zip
 
   upload_assets:
     needs: create_release

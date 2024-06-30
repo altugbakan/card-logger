@@ -1,4 +1,4 @@
-package utils
+package db
 
 import (
 	"archive/zip"
@@ -8,25 +8,27 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/altugbakan/card-logger/utils"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 const (
-	downloadURL = "https://github.com/altugbakan/card-logger/releases/latest/download/cards.db.zip"
+	downloadURL = "https://github.com/altugbakan/card-logger/releases/latest/download/"
 )
 
 type DownloadCompleteMsg struct{}
 type DownloadFailedMsg struct{}
 
 func FetchLatestRelease() tea.Msg {
-	zipData, err := downloadFile(downloadURL)
+	dbURL := downloadURL + fmt.Sprintf("cards_%s.zip", utils.GetConfig().Type)
+	zipData, err := downloadFile(dbURL)
 	if err != nil {
-		LogError("failed to download file: %v", err)
+		utils.LogError("failed to download file: %v", err)
 		return DownloadFailedMsg{}
 	}
 
-	if err := unzipAndSave(zipData, DatabaseFilePath); err != nil {
-		LogError("failed to unzip and save file: %v", err)
+	if err := unzipAndSave(zipData, getDatabasePath()); err != nil {
+		utils.LogError("failed to unzip and save file: %v", err)
 		return DownloadFailedMsg{}
 	}
 
@@ -44,13 +46,14 @@ func downloadFile(url string) ([]byte, error) {
 }
 
 func unzipAndSave(data []byte, outputPath string) error {
+	filename := "cards.db"
 	r, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
 	if err != nil {
 		return err
 	}
 
 	for _, f := range r.File {
-		if f.Name == "cards.db" {
+		if f.Name == filename {
 			rc, err := f.Open()
 			if err != nil {
 				return err
@@ -62,9 +65,14 @@ func unzipAndSave(data []byte, outputPath string) error {
 				return err
 			}
 
+			err = os.MkdirAll(getDatabaseDirectory(), 0755)
+			if err != nil {
+				return err
+			}
+
 			return os.WriteFile(outputPath, fileData, 0644)
 		}
 	}
 
-	return fmt.Errorf("cards.db not found in zip")
+	return fmt.Errorf("file %s not found in zip", filename)
 }
