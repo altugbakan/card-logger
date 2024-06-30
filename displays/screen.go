@@ -1,11 +1,11 @@
-package screens
+package displays
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Screen interface {
-	Update(tea.Msg) (Screen, tea.Cmd)
+type Displayer interface {
+	Update(tea.Msg) (Displayer, tea.Cmd)
 	View() string
 	Help() string
 }

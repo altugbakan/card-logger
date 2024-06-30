@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/altugbakan/card-logger/db"
-	"github.com/altugbakan/card-logger/screens"
+	"github.com/altugbakan/card-logger/displays"
 	"github.com/altugbakan/card-logger/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,7 +15,7 @@ import (
 )
 
 type model struct {
-	currentScreen screens.Screen
+	currentScreen displays.Displayer
 	width         int
 	height        int
 }
@@ -35,15 +35,15 @@ func main() {
 	width, height := utils.GetWindowSize()
 	utils.LogInfo("initial terminal size: %d x %d", width, height)
 
-	var currentScreen screens.Screen
+	var currentScreen displays.Displayer
 	if db.Exists() {
 		utils.LogInfo("database exists, starting with the title screen...")
-		currentScreen = screens.NewTitleScreen()
+		currentScreen = displays.NewTitleScreen()
 		db.Init()
 		defer db.Close()
 	} else {
 		utils.LogInfo("database does not exist, starting with the initialize screen...")
-		currentScreen = screens.NewInitializeScreen()
+		currentScreen = displays.NewInitializeScreen()
 	}
 
 	initialModel := model{

@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"github.com/altugbakan/card-logger/db"
@@ -48,7 +48,7 @@ func NewCardListScreen(abbr string) (CardList, error) {
 	}, nil
 }
 
-func (s CardList) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s CardList) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if s.list.SettingFilter() {
@@ -134,7 +134,7 @@ func (s *CardList) handleRemove() {
 	s.list.SetItem(s.list.Index(), selectedItem)
 }
 
-func (s *CardList) handleLeft() (Screen, tea.Cmd) {
+func (s *CardList) handleLeft() (Displayer, tea.Cmd) {
 	if s.itemDelegate.SelectedIndex == 0 {
 		prevSelectedItem, ok := s.list.SelectedItem().(items.Card)
 		if !ok {
@@ -166,7 +166,7 @@ func (s *CardList) handleLeft() (Screen, tea.Cmd) {
 	return s, nil
 }
 
-func (s *CardList) handleRight() (Screen, tea.Cmd) {
+func (s *CardList) handleRight() (Displayer, tea.Cmd) {
 	selectedItem, ok := s.list.SelectedItem().(items.Card)
 	if !ok {
 		utils.LogError("error casting selected item to CardItem")

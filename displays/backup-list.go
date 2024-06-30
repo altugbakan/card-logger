@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"github.com/altugbakan/card-logger/db"
@@ -14,10 +14,10 @@ import (
 type BackupList struct {
 	keyMap         keymaps.BackupList
 	list           list.Model
-	previousScreen Screen
+	previousScreen Displayer
 }
 
-func NewBackupListScreen(previousScreen Screen) BackupList {
+func NewBackupListScreen(previousScreen Displayer) BackupList {
 	keyMap := keymaps.NewBackupListKeyMap()
 
 	backups, maxNameLength, err := getBackupItems()
@@ -38,7 +38,7 @@ func NewBackupListScreen(previousScreen Screen) BackupList {
 	}
 }
 
-func (s BackupList) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s BackupList) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if s.list.SettingFilter() {
@@ -99,7 +99,7 @@ func getBackupItems() ([]list.Item, int, error) {
 	return backups, maxNameLength, nil
 }
 
-func (s *BackupList) restoreBackup() utils.Message {
+func (s *BackupList) restoreBackup() utils.Renderer {
 	i, ok := s.list.SelectedItem().(items.Backup)
 	if ok {
 		err := db.RestoreBackup(i.Name)

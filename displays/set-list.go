@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"github.com/altugbakan/card-logger/db"
@@ -41,7 +41,7 @@ func NewSetListScreen() (SetList, error) {
 	}, nil
 }
 
-func (s SetList) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s SetList) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if s.list.SettingFilter() {

@@ -2,12 +2,12 @@ package utils
 
 import "fmt"
 
-type Message interface {
+type Renderer interface {
 	Render() string
 }
 
 type InfoMessage struct {
-	Message
+	Renderer
 	Text string
 }
 
@@ -20,7 +20,7 @@ func NewInfoMessage(format string, a ...any) InfoMessage {
 }
 
 type ErrorMessage struct {
-	Message
+	Renderer
 	Text string
 }
 

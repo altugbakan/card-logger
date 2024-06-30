@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"github.com/altugbakan/card-logger/keymaps"
@@ -19,7 +19,7 @@ func NewTitleScreen() Title {
 	return Title{keyMap: keyMap}
 }
 
-func (s Title) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Title) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {

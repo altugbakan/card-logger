@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"runtime"
@@ -35,7 +35,7 @@ func NewInitializeScreen() Initialize {
 	}
 }
 
-func (s Initialize) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Initialize) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {

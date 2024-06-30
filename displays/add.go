@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"database/sql"
@@ -72,7 +72,7 @@ func NewAddScreen() Add {
 	}
 }
 
-func (s Add) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Add) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -106,7 +106,7 @@ func (s Add) Help() string {
 	return s.keyMap.Help()
 }
 
-func (s *Add) handleAddKeyPress() utils.Message {
+func (s *Add) handleAddKeyPress() utils.Renderer {
 	submitResult, err := s.submit(s.input.Value())
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
@@ -131,7 +131,7 @@ func (s *Add) handleAddKeyPress() utils.Message {
 	return utils.NewErrorMessage("invalid input")
 }
 
-func (s *Add) handleBackKeyPress() (Screen, tea.Cmd) {
+func (s *Add) handleBackKeyPress() (Displayer, tea.Cmd) {
 	if s.set != "" {
 		s.resetSet()
 		return s, nil
@@ -139,7 +139,7 @@ func (s *Add) handleBackKeyPress() (Screen, tea.Cmd) {
 	return NewTitleScreen(), nil
 }
 
-func (s *Add) handleUndoKeyPress() utils.Message {
+func (s *Add) handleUndoKeyPress() utils.Renderer {
 	result, err := s.undoLastAddition()
 	if err != nil {
 		return utils.NewErrorMessage(err.Error())
@@ -196,14 +196,14 @@ func (s *Add) submit(input string) (submitResult, error) {
 	}
 }
 
-func (s *Add) changeSet(set string) utils.Message {
+func (s *Add) changeSet(set string) utils.Renderer {
 	s.set = set
 	s.input.Placeholder = placeholderWithoutSet
 	s.input.SetValue("")
 	return utils.NewInfoMessage(formatWithoutSet)
 }
 
-func (s *Add) resetSet() utils.Message {
+func (s *Add) resetSet() utils.Renderer {
 	s.set = ""
 	s.input.Placeholder = placeholder
 	return utils.NewInfoMessage(format)

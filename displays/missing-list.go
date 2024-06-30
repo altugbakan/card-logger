@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"strings"
@@ -64,7 +64,7 @@ func NewMissingListScreen(abbr string) (MissingList, error) {
 	}, nil
 }
 
-func (s MissingList) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s MissingList) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		if s.list.SettingFilter() {

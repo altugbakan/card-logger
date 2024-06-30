@@ -1,4 +1,4 @@
-package screens
+package displays
 
 import (
 	"github.com/altugbakan/card-logger/db"
@@ -43,7 +43,7 @@ func WithMessage(msg string) BackupScreenOption {
 	}
 }
 
-func (s Backup) Update(msg tea.Msg) (Screen, tea.Cmd) {
+func (s Backup) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch {
@@ -74,7 +74,7 @@ func (s Backup) Help() string {
 	return s.keyMap.Help()
 }
 
-func (s *Backup) saveBackup() (utils.Message, error) {
+func (s *Backup) saveBackup() (utils.Renderer, error) {
 	var err error
 	s.latestBackup, err = db.SaveBackup()
 	if err != nil {
