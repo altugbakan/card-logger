@@ -30,9 +30,12 @@ func GetSet(abbr string) (Set, error) {
 
 	return set, err
 }
-
 func GetAllSets() ([]Set, error) {
-	query := `SELECT abbr, name, total_cards FROM sets`
+	query := `
+    SELECT s.abbr, s.name, s.total_cards 
+    FROM sets s
+    JOIN base_sets bs ON s.base_set = bs.name
+    ORDER BY bs.set_order DESC, s.set_order DESC`
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
