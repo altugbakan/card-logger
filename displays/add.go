@@ -23,6 +23,7 @@ const (
 	formatWithoutSet      = "format: number pattern"
 	inputWidth            = 15
 	inputCharLimit        = 15
+	setCharWidth          = 5
 )
 
 type submitResult interface{}
@@ -96,7 +97,9 @@ func (s Add) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 
 func (s Add) View() string {
 	title := utils.TitleStyle.MarginBottom(1).Render("Add Card")
-	input := lipgloss.JoinHorizontal(lipgloss.Center, utils.ActionStyle.Width(3).Render(s.set), s.input.View())
+	input := lipgloss.JoinHorizontal(lipgloss.Center,
+		utils.ActionStyle.Width(setCharWidth).AlignHorizontal(lipgloss.Right).Render(s.set),
+		s.input.View(), utils.EmptyStyle.Width(setCharWidth).Render())
 	titleAndInput := lipgloss.JoinVertical(lipgloss.Center, title, input)
 	msg := utils.EmptyStyle.MarginTop(1).Render(s.msg)
 	return lipgloss.JoinVertical(lipgloss.Center, titleAndInput, msg)
