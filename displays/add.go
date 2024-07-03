@@ -341,6 +341,10 @@ func validateInput(set string, number int, pattern string, operation string) (db
 			utils.LogError("could not get patterns for rarity %s while %s card: %v", card.Rarity, operation, err)
 			return db.Card{}, "", fmt.Errorf("could not get patterns for rarity %s", card.Rarity)
 		}
+		if len(patterns) == 0 {
+			utils.LogWarning("no patterns found for rarity %s while %s card", card.Rarity, operation)
+			return db.Card{}, "", fmt.Errorf("no patterns found for rarity %s", card.Rarity)
+		}
 		pattern = patterns[0]
 	} else {
 		valid, err := db.IsPatternValidForRarity(card.Set, card.Rarity, pattern)
