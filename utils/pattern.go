@@ -23,12 +23,12 @@ func CorrectPattern(pattern string) string {
 	}
 }
 
-func GetPatternText(rarity string, possiblePatterns []string, patterns map[string]int) string {
+func GetPatternText(possiblePatterns []string, patterns map[string]int) string {
 	patternsText := make([]string, 0, len(possiblePatterns))
 	for _, pattern := range possiblePatterns {
 		quantity := patterns[pattern]
 
-		patternsText = append(patternsText, pattern+": "+strconv.Itoa(quantity))
+		patternsText = append(patternsText, pattern+":"+strconv.Itoa(quantity))
 	}
 
 	return strings.Join(patternsText, ", ")

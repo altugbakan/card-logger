@@ -123,8 +123,8 @@ func (s *Add) handleAddKeyPress() utils.Renderer {
 			utils.LogError("could not get patterns for rarity %s: %v", result.rarity, err)
 			return utils.NewErrorMessage("could not get patterns for rarity")
 		}
-		message := fmt.Sprintf("added %s - %s", result.name,
-			utils.GetPatternText(result.rarity, possiblePatterns, result.patternAmounts))
+		message := fmt.Sprintf("added %s (%s) - %s", result.name, result.rarity,
+			utils.GetPatternText(possiblePatterns, result.patternAmounts))
 		utils.LogInfo(message)
 		return utils.NewInfoMessage(message)
 	case changeSetResult:
@@ -153,7 +153,7 @@ func (s *Add) handleUndoKeyPress() utils.Renderer {
 			return utils.NewErrorMessage("could not get patterns for rarity")
 		}
 		message := fmt.Sprintf("removed %s - %s", result.name,
-			utils.GetPatternText(result.rarity, possiblePatterns, result.patternAmounts))
+			utils.GetPatternText(possiblePatterns, result.patternAmounts))
 		utils.LogInfo(message)
 		return utils.NewInfoMessage(message)
 	}
