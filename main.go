@@ -32,6 +32,10 @@ func main() {
 		log.SetOutput(io.Discard)
 	}
 
+	if len(os.Args) > 1 {
+		utils.InitializeConfig(os.Args[1])
+	}
+
 	width, height := utils.GetWindowSize()
 	utils.LogInfo("initial terminal size: %d x %d", width, height)
 

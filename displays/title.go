@@ -10,13 +10,15 @@ import (
 )
 
 type Title struct {
-	keyMap keymaps.Title
+	keyMap  keymaps.Title
+	setName string
 }
 
 func NewTitleScreen() Title {
 	keyMap := keymaps.NewTitleKeyMap()
+	setName := utils.GetSetName()
 
-	return Title{keyMap: keyMap}
+	return Title{keyMap: keyMap, setName: setName}
 }
 
 func (s Title) Update(msg tea.Msg) (Displayer, tea.Cmd) {
@@ -44,7 +46,7 @@ func (s Title) Update(msg tea.Msg) (Displayer, tea.Cmd) {
 }
 
 func (s Title) View() string {
-	title := utils.TitleStyle.Render("Card Logger")
+	title := utils.TitleStyle.Render(s.setName, "Card Logger")
 	options := lipgloss.JoinHorizontal(lipgloss.Top,
 		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.Render("[A]"), "dd Cards"),
 		lipgloss.JoinHorizontal(lipgloss.Left, utils.ActionStyle.MarginLeft(4).Render("[L]"), "ist Cards"),

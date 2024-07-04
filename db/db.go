@@ -41,7 +41,7 @@ func Exists() bool {
 
 func getDatabaseDirectory() string {
 	config := utils.GetConfig()
-	return filepath.Join("database", config.Type)
+	return filepath.Join("database", config.SetType)
 }
 
 func getDatabasePath() string {

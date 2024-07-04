@@ -20,7 +20,7 @@ type DownloadCompleteMsg struct{}
 type DownloadFailedMsg struct{}
 
 func FetchLatestRelease() tea.Msg {
-	dbURL := downloadURL + fmt.Sprintf("cards_%s.zip", utils.GetConfig().Type)
+	dbURL := downloadURL + fmt.Sprintf("cards_%s.zip", utils.GetConfig().SetType)
 	zipData, err := downloadFile(dbURL)
 	if err != nil {
 		utils.LogError("failed to download file: %v", err)

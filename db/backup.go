@@ -193,5 +193,5 @@ func extractDateTimeFromName(name string) time.Time {
 
 func getBackupDirectory() string {
 	config := utils.GetConfig()
-	return filepath.Join("backups", config.Type)
+	return filepath.Join("backups", config.SetType)
 }

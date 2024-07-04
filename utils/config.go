@@ -3,10 +3,11 @@ package utils
 import (
 	"encoding/json"
 	"os"
+	"strings"
 )
 
 type Config struct {
-	Type string `json:"type"`
+	SetType string `json:"set_type"`
 }
 
 const configPath = "config.json"
@@ -15,9 +16,27 @@ var cfg *Config
 
 func GetConfig() *Config {
 	if cfg == nil {
-		cfg = initializeConfig()
+		cfg = loadConfig()
 	}
 	return cfg
+}
+
+func InitializeConfig(setType string) {
+	setType = strings.ToLower(setType)
+	cfg = GetConfig()
+	cfg.SetType = setType
+	saveConfig(cfg)
+}
+
+func GetSetName() string {
+	switch setType := GetConfig().SetType; setType {
+	case "pokemon":
+		return "Pokemon"
+	case "yugioh":
+		return "Yu-Gi-Oh!"
+	default:
+		return setType
+	}
 }
 
 func saveConfig(config *Config) {
@@ -32,7 +51,7 @@ func saveConfig(config *Config) {
 	}
 }
 
-func initializeConfig() *Config {
+func loadConfig() *Config {
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		config := getDefaultConfig()
 		saveConfig(config)
@@ -44,7 +63,7 @@ func initializeConfig() *Config {
 
 func getDefaultConfig() *Config {
 	return &Config{
-		Type: "pokemon",
+		SetType: "pokemon",
 	}
 }
 
