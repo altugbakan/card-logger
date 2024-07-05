@@ -31,7 +31,7 @@ func InitializeConfig(setType string) {
 func GetSetName() string {
 	switch setType := GetConfig().SetType; setType {
 	case "pokemon":
-		return "Pokemon"
+		return "Pokémon"
 	case "yugioh":
 		return "Yu-Gi-Oh!"
 	default:
