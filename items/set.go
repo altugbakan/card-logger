@@ -53,13 +53,13 @@ func (d SetDelegate) Render(w io.Writer, m list.Model, index int, listItem list.
 		ownedAndTotal := utils.ActionStyle.Width(maxOwnedAndTotalLength).
 			AlignHorizontal(lipgloss.Right).MarginLeft(1).Render(owned + "/" + total)
 		progressBar.PercentageStyle = utils.ActionStyle
-		display = utils.ActionStyle.Render("> ", itemName, progressBar.ViewAs(percent), ownedAndTotal)
+		display = utils.ActionStyle.Render(">", itemName, progressBar.ViewAs(percent), ownedAndTotal)
 	} else {
 		itemName := utils.TextStyle.Width(d.MaxNameLength).MarginRight(1).Render(item.Name)
 		ownedAndTotal := utils.TextStyle.Width(maxOwnedAndTotalLength).
 			AlignHorizontal(lipgloss.Right).MarginLeft(1).Render(owned + "/" + total)
 		progressBar.PercentageStyle = utils.TextStyle
-		display = utils.TextStyle.Render("  ", itemName, progressBar.ViewAs(percent), ownedAndTotal)
+		display = utils.TextStyle.Render(" ", itemName, progressBar.ViewAs(percent), ownedAndTotal)
 	}
 
 	io.WriteString(w, display)
