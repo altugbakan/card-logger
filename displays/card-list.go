@@ -123,6 +123,11 @@ func (s *CardList) handleRemove() {
 	}
 
 	selectedPattern := selectedItem.Patterns[s.itemDelegate.SelectedIndex].Name
+
+	if selectedItem.Patterns[s.itemDelegate.SelectedIndex].Quantity < 1 {
+		return
+	}
+
 	err := db.RemoveUserCard(selectedItem.CardID, selectedPattern)
 	if err != nil {
 		utils.LogError("error removing user card: %v", err)
