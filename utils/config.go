@@ -34,6 +34,8 @@ func GetSetName() string {
 		return "Pokémon"
 	case "yugioh":
 		return "Yu-Gi-Oh!"
+	case "magic":
+		return "Magic the Gathering"
 	default:
 		return setType
 	}
